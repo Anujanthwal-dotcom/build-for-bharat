@@ -149,6 +149,7 @@ export default function CreateTemplateDialog({ open, onOpenChange, onCreated }: 
                   <option value="url">URL</option>
                   <option value="text">Text</option>
                   <option value="file">File</option>
+                  <option value="github">GitHub Repo</option>
                 </select>
               </div>
               <div>

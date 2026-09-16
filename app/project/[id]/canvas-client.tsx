@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { ReactFlow, Controls, Background, MiniMap, useReactFlow, ReactFlowProvider, useNodesState, useEdgesState, addEdge, BackgroundVariant, type Node, type Edge, type Connection } from '@xyflow/react';
+import { ReactFlow, Background, MiniMap, useReactFlow, ReactFlowProvider, useNodesState, useEdgesState, addEdge, BackgroundVariant, type Node, type Edge, type Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { ArrowLeft, Share, Check, LayoutTemplate, Layers } from 'lucide-react';
@@ -9,6 +9,8 @@ import Link from 'next/link';
 
 import CustomNode from '@/components/flow/custom-node';
 import CustomEdge from '@/components/flow/custom-edge';
+import { NodeDetailPanel } from '@/components/flow/node-detail-panel';
+import { CanvasControls } from '@/components/flow/canvas-controls';
 import { ExportMenu } from '@/components/project/export-menu';
 import { SourceInspector } from '@/components/project/source-inspector';
 import { calculateDagreLayout } from '@/lib/layout';
@@ -29,6 +31,7 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
   const [nodes, setNodes, onNodesChange] = useNodesState(_initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(_initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [detailNodeId, setDetailNodeId] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -121,7 +124,7 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
     (nodeId: string) => {
       setSelectedNodeId(nodeId);
       const node = nodes.find((n) => n.id === nodeId);
-      if (node) setCenter(node.position.x + 125, node.position.y + 60, { zoom: 1.2, duration: 400 });
+      if (node) setCenter(node.position.x + 120, node.position.y + 50, { zoom: 1.2, duration: 400 });
     },
     [nodes, setCenter],
   );
@@ -134,7 +137,61 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
 
   const outline = useMemo(() => nodes.map((n) => ({ id: n.id, label: ((n.data as Record<string, unknown>).label as string) ?? "" })), [nodes]);
 
-  const onNodeClick = useCallback((_: unknown, node: Node) => setSelectedNodeId(node.id), []);
+  // Node click → open detail panel
+  const onNodeClick = useCallback((_: unknown, node: Node) => {
+    setSelectedNodeId(node.id);
+    setDetailNodeId(node.id);
+  }, []);
+
+  // Pane click → close detail panel
+  const onPaneClick = useCallback(() => {
+    setDetailNodeId(null);
+    setSelectedNodeId(null);
+  }, []);
+
+  // Navigate to a connected node from the detail panel
+  const handleDetailNavigate = useCallback(
+    (nodeId: string) => {
+      setSelectedNodeId(nodeId);
+      setDetailNodeId(nodeId);
+      const node = nodes.find((n) => n.id === nodeId);
+      if (node) setCenter(node.position.x + 120, node.position.y + 50, { zoom: 1.2, duration: 400 });
+    },
+    [nodes, setCenter],
+  );
+
+  // Build detail panel data
+  const detailNode = useMemo(() => {
+    if (!detailNodeId) return null;
+    const n = nodes.find((nd) => nd.id === detailNodeId);
+    if (!n) return null;
+    const d = n.data as Record<string, unknown>;
+    return {
+      id: n.id,
+      label: (d.label as string) ?? "",
+      summary: (d.summary as string) ?? "",
+      category: (d.category as string) ?? "default",
+      tags: (d.tags as string[]) ?? [],
+    };
+  }, [detailNodeId, nodes]);
+
+  const connectedNodes = useMemo(() => {
+    if (!detailNodeId) return [];
+    return edges
+      .filter((e) => e.source === detailNodeId || e.target === detailNodeId)
+      .map((e) => {
+        const isOutgoing = e.source === detailNodeId;
+        const otherId = isOutgoing ? e.target : e.source;
+        const otherNode = nodes.find((n) => n.id === otherId);
+        const otherData = otherNode?.data as Record<string, unknown> | undefined;
+        return {
+          id: otherId,
+          label: (otherData?.label as string) ?? "",
+          edgeLabel: ((e.data as Record<string, unknown> | undefined)?.label as string) ?? "",
+          direction: (isOutgoing ? "outgoing" : "incoming") as "incoming" | "outgoing",
+        };
+      });
+  }, [detailNodeId, edges, nodes]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -170,7 +227,7 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden text-foreground" tabIndex={0} onKeyDown={handleKeyDown}>
-      {/* Source Inspector sidebar (right) */}
+      {/* Source Inspector sidebar (left) */}
       {isSidebarOpen && (
         <SourceInspector
           sources={sources}
@@ -229,6 +286,7 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
             onNodesDelete={onNodesDelete}
             onEdgesDelete={onEdgesDelete}
             onNodeClick={onNodeClick}
+            onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             fitView
@@ -238,14 +296,24 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
             proOptions={{ hideAttribution: true }}
             className="bg-[#09090b]"
           >
-            <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="rgba(255,255,255,0.05)" />
-            <Controls className="!bg-black/60 !border-white/10 !backdrop-blur-md !rounded-lg !overflow-hidden" />
+            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="rgba(255,255,255,0.04)" />
             <MiniMap
               nodeColor="rgba(226,224,217,0.4)"
               maskColor="rgba(0,0,0,0.6)"
               className="!bg-[#0d0d11] !border-white/10 !rounded-lg"
             />
           </ReactFlow>
+
+          {/* Custom zoom controls */}
+          <CanvasControls />
+
+          {/* Node Detail Panel (overlays canvas from the right) */}
+          <NodeDetailPanel
+            node={detailNode}
+            connectedNodes={connectedNodes}
+            onClose={() => { setDetailNodeId(null); setSelectedNodeId(null); }}
+            onNavigate={handleDetailNavigate}
+          />
         </div>
       </div>
     </div>

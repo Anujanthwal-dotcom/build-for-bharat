@@ -44,7 +44,7 @@ export function SourceInspector({ sources, outline, selectedNodeId, onOutlineSel
   }
 
   return (
-    <div className="flex h-full w-72 flex-col border-l border-white/[0.07] bg-[#0d0d11]/80 backdrop-blur-xl">
+    <div className="flex h-full w-72 flex-col border-r border-white/[0.07] bg-[#0d0d11]/80 backdrop-blur-xl">
       <div className="flex items-center justify-between px-3 py-3 border-b border-white/[0.05]">
         <div className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
           <ListTree className="h-3.5 w-3.5" /> Sources

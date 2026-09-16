@@ -26,7 +26,7 @@ export function SidebarNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+            className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-[background-color,color] outline-none focus:outline-none focus-visible:outline-none ${
               active
                 ? "bg-white/10 text-white font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] border border-white/5"
                 : "text-muted hover:bg-white/5 hover:text-white"

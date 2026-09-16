@@ -12,6 +12,14 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   default: "bg-white/10 text-white/80 border-white/20",
 };
 
+export const CATEGORY_ACCENT_BORDER: Record<Category, string> = {
+  core: "#E2E0D9",
+  memory: "#3B82F6",
+  execution: "#10B981",
+  concurrency: "#A855F7",
+  default: "rgba(255,255,255,0.25)",
+};
+
 export const CATEGORY_LABELS: Record<Category, string> = {
   core: "Core",
   memory: "Memory",
@@ -35,7 +43,7 @@ export const PROJECT_GRADIENTS = [
   "from-indigo-500/40 to-purple-600/20",
 ] as const;
 
-export const TEMPLATE_CATEGORIES = ["video", "lecture", "document", "meeting", "custom"] as const;
+export const TEMPLATE_CATEGORIES = ["video", "lecture", "document", "meeting", "codebase", "custom"] as const;
 export type TemplateCategory = (typeof TEMPLATE_CATEGORIES)[number];
 
 export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
@@ -43,6 +51,7 @@ export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory, string> = {
   lecture: "Lecture / Audio",
   document: "Document",
   meeting: "Meeting",
+  codebase: "Codebase",
   custom: "Custom",
 };
 
@@ -55,6 +64,7 @@ export const TEMPLATE_BUILDERS = [
   { label: "Technical Doc", depth: "standard" },
   { label: "Meeting Notes", depth: "summary" },
   { label: "Book / Chapter", depth: "deep" },
+  { label: "GitHub Repo Structure", depth: "deep" },
 ] as const;
 
 export interface TemplateDef {
@@ -66,7 +76,7 @@ export interface TemplateDef {
   category: TemplateCategory;
   systemInstructions: string;
   defaultDepth: "summary" | "standard" | "deep";
-  suggestedInput: "url" | "text" | "file" | "any";
+  suggestedInput: "url" | "text" | "file" | "github" | "any";
   isCustom: boolean;
 }
 
@@ -78,7 +88,7 @@ export interface CustomTemplateRecord {
   tags: string[];
   systemInstructions: string;
   defaultDepth: "summary" | "standard" | "deep";
-  suggestedInput: "url" | "text" | "file" | "any";
+  suggestedInput: "url" | "text" | "file" | "github" | "any";
 }
 
 export const BUILTIN_TEMPLATES: TemplateDef[] = [
@@ -185,5 +195,19 @@ export const BUILTIN_TEMPLATES: TemplateDef[] = [
     isCustom: false,
     systemInstructions:
       "This is a book, chapter, or long-form written content. Extract the overall thesis, chapter or section structure, main arguments, supporting concepts, examples, and conclusions. Preserve logical chains — how each idea builds on previous ones. Deep granularity is expected: include sub-concepts and notable illustrative details.",
+  },
+  {
+    id: "github-repo-structure",
+    name: "GitHub Repo Structure",
+    emoji: "🏗️",
+    description:
+      "Map a GitHub repository's architecture — directory structure, module responsibilities, data flow, entry points, and how components connect to each other.",
+    tags: ["github", "codebase", "architecture", "devtools"],
+    category: "codebase",
+    defaultDepth: "deep",
+    suggestedInput: "github",
+    isCustom: false,
+    systemInstructions:
+      "This is a GitHub repository structure or README. Your goal is to help the user understand the structural flow of the codebase. Extract: 1) The top-level directory layout and what each directory is responsible for. 2) Entry points — where execution starts (e.g. main files, index files, server entry, CLI entry). 3) Core modules and their responsibilities — identify the key files/folders that form the backbone. 4) Data flow — how data moves through the system (e.g. request → router → controller → service → database). 5) Dependency relationships between modules — which modules import/depend on which. 6) Configuration and infrastructure files (CI/CD, Docker, env, config). 7) Shared utilities, types, constants, and helper layers. Use edge labels like 'imports', 'calls', 'configures', 'renders', 'depends-on', 'triggers', and 'extends' to show relationships. Structure the mindmap as a layered architecture: entry points at the top, core logic in the middle, shared utilities and config at the bottom. Focus on giving the user a clear mental model of 'how this repo works' rather than listing every file.",
   },
 ];

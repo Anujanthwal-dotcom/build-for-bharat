@@ -1,10 +1,10 @@
 import dagre from "@dagrejs/dagre";
 import type { MindMapEdge, MindMapNode, LayoutDirection } from "@/lib/types";
 
-const NODE_WIDTH = 250;
-const NODE_HEIGHT = 120;
-const HORIZONTAL_SPACING = 48;
-const VERTICAL_SPACING = 32;
+const NODE_WIDTH = 240;
+const NODE_HEIGHT = 100;
+const HORIZONTAL_SPACING = 80;
+const VERTICAL_SPACING = 48;
 
 export interface LayeredNode extends MindMapNode {
   x: number;
@@ -28,8 +28,8 @@ export function calculateDagreLayout(
     rankdir: direction,
     nodesep: HORIZONTAL_SPACING,
     ranksep: VERTICAL_SPACING,
-    marginx: 40,
-    marginy: 40,
+    marginx: 60,
+    marginy: 60,
   });
 
   for (const node of nodes) {
