@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowRight, Check, X, Sparkles, Wand2 } from 'lucide-react';
+import { ArrowRight, Check, Sparkles, Wand2 } from 'lucide-react';
 import { useUIStore } from '@/lib/store/ui-store';
 
 export default function OnboardingTour() {
@@ -42,7 +42,7 @@ export default function OnboardingTour() {
     <Dialog.Root open={isOnboardingTourOpen} onOpenChange={(open) => !open && handleFinish()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 data-[state=open]:animate-fade-in" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-xl glass-card rounded-lg z-50 overflow-hidden flex flex-col data-[state=open]:animate-fade-in-up border border-accent/20">
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-xl glass rounded-lg z-50 overflow-hidden flex flex-col data-[state=open]:animate-fade-in-up border border-accent/20">
           
           <div className="absolute top-0 left-0 right-0 h-1 bg-white/10">
             <div 

@@ -1,23 +1,33 @@
-import { BaseEdge, EdgeProps, getSmoothStepPath, EdgeLabelRenderer } from '@xyflow/react';
+import { BaseEdge, EdgeProps, Position, getSmoothStepPath, EdgeLabelRenderer } from '@xyflow/react';
 
-export default function CustomEdge({
-  id,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition,
-  style = {},
-  markerEnd,
-  data,
-  selected
-}: EdgeProps) {
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
+const END_OFFSET = 4;
+
+export default function CustomEdge(props: EdgeProps) {
+  const {
+    id,
     sourceX,
     sourceY,
-    sourcePosition,
     targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+    markerEnd,
+    data,
+    selected
+  } = props;
+
+  let sX = sourceX;
+  let tX = targetX;
+  if (sourcePosition === Position.Right) sX += END_OFFSET;
+  else if (sourcePosition === Position.Left) sX -= END_OFFSET;
+  if (targetPosition === Position.Left) tX -= END_OFFSET;
+  else if (targetPosition === Position.Right) tX += END_OFFSET;
+
+  const [edgePath, labelX, labelY] = getSmoothStepPath({
+    sourceX: sX,
+    sourceY,
+    sourcePosition,
+    targetX: tX,
     targetY,
     targetPosition,
     borderRadius: 16,
@@ -25,38 +35,16 @@ export default function CustomEdge({
 
   return (
     <>
-      <defs>
-        <linearGradient id={`gradient-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="rgba(226,224,217,0.1)" />
-          <stop offset="50%" stopColor={selected ? "rgba(226,224,217,0.8)" : "rgba(226,224,217,0.4)"} />
-          <stop offset="100%" stopColor="rgba(226,224,217,0.1)" />
-        </linearGradient>
-      </defs>
-      
-      {/* Background shadow path */}
-      <BaseEdge 
-        id={`${id}-bg`}
-        path={edgePath} 
-        style={{
-          ...style,
-          strokeWidth: 6,
-          stroke: 'rgba(0,0,0,0.4)',
-          filter: 'blur(4px)',
-        }}
-      />
-      
-      {/* Main animated path */}
       <BaseEdge 
         id={id} 
         path={edgePath} 
         markerEnd={markerEnd} 
         style={{
-          ...style,
-          strokeWidth: selected ? 2 : 1.5,
-          stroke: `url(#gradient-${id})`,
-          strokeDasharray: '4 4',
+          strokeWidth: selected ? 2.5 : 2,
+          stroke: selected ? 'rgba(226,224,217,0.8)' : 'rgba(226,224,217,0.4)',
+          strokeDasharray: '6 4',
+          strokeLinecap: 'round',
         }} 
-        className={selected ? 'animate-dash-flow' : 'opacity-60'}
       />
 
       {data?.label && (

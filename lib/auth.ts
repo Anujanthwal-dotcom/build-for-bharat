@@ -1,22 +1,19 @@
 import type { NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/lib/db";
-
-export const GOOGLE_OATH_CONFIGURED = Boolean(
-  process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET,
-);
+import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
-      clientId: process.env.AUTH_GOOGLE_ID ?? "mindflow-mock-client",
-      clientSecret: process.env.AUTH_GOOGLE_SECRET ?? "mindflow-mock-secret",
+      clientId: process.env.AUTH_GOOGLE_ID ?? "",
+      clientSecret: process.env.AUTH_GOOGLE_SECRET ?? "",
     }),
   ],
   session: { strategy: "jwt" },
-  secret: process.env.AUTH_SECRET ?? "mindflow-dev-secret-change-me",
+  secret: process.env.AUTH_SECRET,
   pages: { signIn: "/" },
   callbacks: {
     async jwt({ token, user }) {
@@ -33,3 +30,9 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
+export async function getSessionUserId(): Promise<string | null> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return null;
+  return (session.user as { id?: string }).id ?? null;
+}

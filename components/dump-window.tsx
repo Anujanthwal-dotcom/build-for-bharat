@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Tabs from "@radix-ui/react-tabs";
 import * as Slider from "@radix-ui/react-slider";
@@ -19,6 +19,21 @@ export default function DumpWindowModal() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [statusText, setStatusText] = useState("Build Mind Map");
   const [depth, setDepth] = useState([50]); // 0 = Summary, 50 = Standard, 100 = Deep Dive
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/account/preferences");
+        if (!res.ok) return;
+        const prefs = await res.json();
+        if (prefs.defaultDepth === "summary") setDepth([0]);
+        else if (prefs.defaultDepth === "deep") setDepth([100]);
+        else setDepth([50]);
+      } catch {
+        // keep default
+      }
+    })();
+  }, []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,8 +60,11 @@ export default function DumpWindowModal() {
       setStatusText("Extracting knowledge graph...");
 
       // 2. Generate Graph
+      const depthValue: "summary" | "standard" | "deep" = depth[0] < 33 ? "summary" : depth[0] > 66 ? "deep" : "standard";
       const genRes = await fetch(`/api/projects/${projectId}/generate`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ depth: depthValue }),
       });
       const genData = await genRes.json();
       
@@ -56,9 +74,9 @@ export default function DumpWindowModal() {
       closeDumpWindow();
       router.push(`/project/${projectId}`);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      alert(error.message);
+      alert(error instanceof Error ? error.message : "Failed to create mindmap");
     } finally {
       setIsGenerating(false);
       setStatusText("Build Mind Map");

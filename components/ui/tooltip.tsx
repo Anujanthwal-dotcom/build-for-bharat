@@ -17,8 +17,8 @@ export function TooltipContent({
       <TooltipPrimitive.Content
         sideOffset={sideOffset}
         className={cn(
-          "z-50 rounded-lg glass-card px-3 py-1.5 text-xs text-zinc-200",
-          "shadow-glass animate-fade-in",
+          "z-50 rounded-lg glass px-3 py-1.5 text-xs text-zinc-200",
+          "animate-fade-in",
           className,
         )}
         {...props}

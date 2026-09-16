@@ -1,5 +1,11 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
+import { CATEGORY_COLORS } from '@/lib/constants';
+
+const SOURCE_HANDLES = 10;
+const TARGET_HANDLES = 10;
+
+const spreadTop = (i: number, total: number) => `${((i + 0.5) * 100) / total}%`;
 
 interface CustomNodeProps {
   data: {
@@ -11,22 +17,23 @@ interface CustomNodeProps {
   selected?: boolean;
 }
 
-const categoryColors: Record<string, string> = {
-  core: 'bg-accent/20 text-accent border-accent/30',
-  memory: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  execution: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  concurrency: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  default: 'bg-white/10 text-white/80 border-white/20',
-};
-
 const CustomNode = ({ data, selected }: CustomNodeProps) => {
-  const catStyle = data.category && categoryColors[data.category] ? categoryColors[data.category] : categoryColors.default;
+  const catStyle = data.category && CATEGORY_COLORS[data.category as keyof typeof CATEGORY_COLORS] ? CATEGORY_COLORS[data.category as keyof typeof CATEGORY_COLORS] : CATEGORY_COLORS.default;
 
   return (
     <div className={`relative min-w-[220px] max-w-[280px] rounded-lg p-4 transition-all duration-300 glass hover:shadow-[0_12px_40px_rgba(226,224,217,0.15)] ${
       selected ? 'border-accent ring-1 ring-accent/50 shadow-[0_0_30px_rgba(226,224,217,0.2)] bg-white/[0.08]' : 'bg-white/[0.04]'
     }`}>
-      <Handle type="target" position={Position.Top} className="!w-16 !h-1 !bg-white/20 !rounded-none !border-none !top-[-1px] opacity-0 hover:opacity-100 transition-opacity" />
+      {Array.from({ length: TARGET_HANDLES }, (_, i) => (
+        <Handle
+          key={`t-${i}`}
+          id={`t-${i}`}
+          type="target"
+          position={Position.Left}
+          style={{ top: spreadTop(i, TARGET_HANDLES) }}
+          className="!w-1 !h-1.5 !bg-white/20 !rounded-none !border-none !left-[-1px] opacity-0 hover:opacity-100 transition-opacity"
+        />
+      ))}
       
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
@@ -55,7 +62,16 @@ const CustomNode = ({ data, selected }: CustomNodeProps) => {
         )}
       </div>
 
-      <Handle type="source" position={Position.Bottom} className="!w-16 !h-1 !bg-accent/50 !rounded-none !border-none !bottom-[-1px] opacity-0 hover:opacity-100 transition-opacity" />
+      {Array.from({ length: SOURCE_HANDLES }, (_, i) => (
+        <Handle
+          key={`s-${i}`}
+          id={`s-${i}`}
+          type="source"
+          position={Position.Right}
+          style={{ top: spreadTop(i, SOURCE_HANDLES) }}
+          className="!w-1 !h-1.5 !bg-accent/50 !rounded-none !border-none !right-[-1px] opacity-0 hover:opacity-100 transition-opacity"
+        />
+      ))}
     </div>
   );
 };

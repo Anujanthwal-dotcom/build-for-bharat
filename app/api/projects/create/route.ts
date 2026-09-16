@@ -1,37 +1,27 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getSessionUserId } from '@/lib/auth';
 import * as cheerio from 'cheerio';
-const pdf = require('pdf-parse');
-
-// Helper to get or create a dummy user for the demo
-async function getDummyUser() {
-  let user = await prisma.user.findFirst({ where: { email: 'demo@mindflow.app' } });
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        name: 'Demo User',
-        email: 'demo@mindflow.app',
-      }
-    });
-  }
-  return user;
-}
+import { PDFParse } from 'pdf-parse';
 
 export async function POST(request: Request) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const text = formData.get('text') as string;
     const linksRaw = formData.get('links') as string;
     const links = linksRaw ? JSON.parse(linksRaw) : [];
     const files = formData.getAll('files') as File[];
 
-    const user = await getDummyUser();
-    
     // Create Project
     const project = await prisma.project.create({
       data: {
-        name: 'New Masterclass',
-        userId: user.id,
+        name: 'New Mindmap',
+        userId,
       }
     });
 
@@ -73,10 +63,11 @@ export async function POST(request: Request) {
       try {
         const buffer = Buffer.from(await file.arrayBuffer());
         if (file.name.endsWith('.pdf')) {
-          const data = await pdf(buffer);
+          const parser = new PDFParse({ data: buffer });
+          const textResult = await parser.getText();
           sources.push({
-            type: 'pdf',
-            content: data.text.substring(0, 20000), // limit size
+            type: 'file',
+            content: textResult.text.substring(0, 20000), // limit size
             label: file.name,
             projectId: project.id,
           });
@@ -104,8 +95,9 @@ export async function POST(request: Request) {
       projectId: project.id,
       message: "Sources parsed successfully." 
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Ingestion error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Ingestion failed";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

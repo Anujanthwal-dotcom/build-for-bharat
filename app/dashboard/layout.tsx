@@ -1,8 +1,30 @@
 import Link from 'next/link';
-import { BrainCircuit, FolderGit2, Blocks, BookOpen, Settings, LogOut } from 'lucide-react';
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { BrainCircuit } from 'lucide-react';
 import OnboardingTour from '@/components/onboarding-tour';
+import { SignOutButton } from '@/components/auth/sign-out-button';
+import { SidebarNav } from '@/components/dashboard/sidebar-nav';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user) {
+    redirect("/");
+  }
+
+  const name = session.user.name || "User";
+  const email = session.user.email || "";
+  const image = session.user.image || null;
+  const initials = name
+    .split(" ")
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden text-foreground">
       {/* Sidebar / Left Rail */}
@@ -17,25 +39,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           {/* Navigation */}
-          <nav className="p-4 space-y-1">
-            <NavItem icon={FolderGit2} label="Projects" active />
-            <NavItem icon={Blocks} label="Templates" />
-            <NavItem icon={BookOpen} label="Documentation" />
-            <NavItem icon={Settings} label="Settings" />
-          </nav>
+          <SidebarNav />
         </div>
 
         {/* User Profile */}
         <div className="p-4 border-t border-white/5 bg-white/[0.01]">
-          <div className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5 transition-colors cursor-pointer">
-            <div className="w-8 h-8 rounded-sm bg-accent/20 border border-accent/30 flex items-center justify-center text-accent font-mono text-xs">
-              U
-            </div>
+          <div className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5 transition-colors">
+            {image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={image}
+                alt={name}
+                className="w-8 h-8 rounded-sm object-cover border border-white/10"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-sm bg-accent/20 border border-accent/30 flex items-center justify-center text-accent font-mono text-xs">
+                {initials || "U"}
+              </div>
+            )}
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-white/90 truncate">User Name</p>
-              <p className="text-xs text-muted truncate">user@example.com</p>
+              <p className="text-sm font-medium text-white/90 truncate">{name}</p>
+              <p className="text-xs text-muted truncate">{email}</p>
             </div>
-            <LogOut className="w-4 h-4 text-muted hover:text-white transition-colors" />
+            <SignOutButton />
           </div>
         </div>
       </aside>
@@ -47,21 +73,5 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       
       <OnboardingTour />
     </div>
-  );
-}
-
-function NavItem({ icon: Icon, label, active = false }: { icon: any, label: string, active?: boolean }) {
-  return (
-    <Link
-      href="#"
-      className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-        active 
-          ? 'bg-white/10 text-white font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] border border-white/5' 
-          : 'text-muted hover:bg-white/5 hover:text-white'
-      }`}
-    >
-      <Icon className={`w-4 h-4 ${active ? 'text-accent' : ''}`} />
-      {label}
-    </Link>
   );
 }

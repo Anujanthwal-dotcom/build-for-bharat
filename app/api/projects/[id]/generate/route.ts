@@ -1,70 +1,77 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { generateObject } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { z } from 'zod';
+import { getSessionUserId } from '@/lib/auth';
+import { extractMindMap, getDepthNodeLimit, type ExtractedGraph } from '@/lib/ai';
+import type { DepthLevel, Source } from '@/lib/types';
+import z from 'zod';
 import dagre from '@dagrejs/dagre';
 
-const GraphSchema = z.object({
-  title: z.string().describe("A concise title for this masterclass project based on the context."),
-  nodes: z.array(z.object({
-    id: z.string(),
-    label: z.string(),
-    summary: z.string(),
-    category: z.enum(["core", "memory", "execution", "concurrency", "default"]),
-    tags: z.array(z.string()).optional()
-  })),
-  edges: z.array(z.object({
-    source: z.string(),
-    target: z.string(),
-    label: z.string().optional()
-  }))
+const RequestSchema = z.object({
+  depth: z.enum(["summary", "standard", "deep"]).optional(),
+  systemInstructions: z.string().optional(),
 });
+
+function buildMockGraph(depth: DepthLevel = "standard"): ExtractedGraph {
+  const nodeLimit = getDepthNodeLimit(depth);
+  const nodes = [
+    { id: "1", label: "Core System", summary: "the main core", category: "core" as const, tags: ["Core"] },
+    { id: "2", label: "Memory Component", summary: "handles memory", category: "memory" as const, tags: ["RAM"] },
+    { id: "3", label: "Execution Engine", summary: "runs workloads", category: "execution" as const, tags: ["Runtime"] },
+    { id: "4", label: "Concurrency Manager", summary: "coordinates parallel work", category: "concurrency" as const, tags: ["Async"] },
+  ];
+  return {
+    title: "Mock Architecture",
+    nodes: depth === "summary" ? nodes.slice(0, 2) : nodes.slice(0, Math.min(nodeLimit, nodes.length)),
+    edges: [
+      { source: "1", target: "2", label: "allocates" },
+      { source: "1", target: "3", label: "orchestrates" },
+      { source: "3", target: "4", label: "uses" },
+    ],
+  };
+}
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    
-    // Fetch project and sources
-    const project = await prisma.project.findUnique({
-      where: { id },
-      include: { sources: true }
+    const userId = await getSessionUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = await request.json().catch(() => ({}));
+    const parsed = RequestSchema.safeParse(body);
+    const depth: DepthLevel = parsed.success && parsed.data.depth ? parsed.data.depth : "standard";
+    const systemInstructions: string | undefined =
+      parsed.success && parsed.data.systemInstructions ? parsed.data.systemInstructions : undefined;
+
+    // Fetch project and sources, scoped to owner
+    const project = await prisma.project.findFirst({
+      where: { id, userId },
+      include: { sources: true },
     });
 
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
-    // Combine source content
-    const combinedContent = project.sources.map(s => `[SOURCE: ${s.label}]\n${s.content}`).join('\n\n');
+    let graphData: ExtractedGraph;
 
-    let graphData;
-
-    if (!process.env.OPENAI_API_KEY) {
-      // Fallback for hackathon without API key
-      console.warn("No OPENAI_API_KEY found, using fallback data.");
-      graphData = {
-        title: "Mock Architecture",
-        nodes: [
-          { id: "1", label: "Core System", summary: "The main core", category: "core", tags: ["Core"] },
-          { id: "2", label: "Memory Component", summary: "Handles memory", category: "memory", tags: ["RAM"] },
-        ],
-        edges: [
-          { source: "1", target: "2", label: "allocates" }
-        ]
-      };
+    if (!process.env.GOOGLE_API_KEY) {
+      console.warn("No GOOGLE_API_KEY found, using fallback data.");
+      graphData = buildMockGraph(depth);
     } else {
-      // Prompt LLM
-      const result = await generateObject({
-        model: openai('gpt-4o'),
-        schema: GraphSchema,
-        prompt: `You are an expert technical architect. Extract a highly structured mind map from the following raw documentation. Identify key concepts as nodes and their relationships as edges. Be concise. Limit to max 15 nodes for clarity.\n\nContent:\n${combinedContent.substring(0, 30000)}`
-      });
-      graphData = result.object;
+      graphData = await extractMindMap(
+        project.sources.map((s) => ({
+          id: s.id,
+          type: s.type as Source["type"],
+          content: s.content,
+          label: s.label,
+        })),
+        depth,
+        systemInstructions,
+      );
     }
 
     // Update project title
     await prisma.project.update({
       where: { id },
-      data: { name: graphData.title }
+      data: { name: graphData.title },
     });
 
     // Run Dagre for layout
@@ -72,51 +79,54 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     g.setGraph({ rankdir: 'LR', align: 'UL', ranksep: 100, nodesep: 50 });
     g.setDefaultEdgeLabel(() => ({}));
 
-    graphData.nodes.forEach((node: any) => {
-      // Approximate node dimensions
+    graphData.nodes.forEach((node) => {
       g.setNode(node.id, { width: 250, height: 120 });
     });
 
-    graphData.edges.forEach((edge: any) => {
-      g.setEdge(edge.source, edge.target);
+    graphData.edges.forEach((edge) => {
+      if (g.hasNode(edge.source) && g.hasNode(edge.target)) g.setEdge(edge.source, edge.target);
     });
 
     dagre.layout(g);
 
     // Prepare nodes with coordinates
-    const nodesToSave = graphData.nodes.map((n: any) => {
+    const nodesToSave = graphData.nodes.map((n) => {
       const layoutNode = g.node(n.id);
       return {
         nodeId: n.id,
         label: n.label,
         summary: n.summary,
         category: n.category,
+        tags: n.tags ?? [],
         x: layoutNode.x - 125, // center offset
         y: layoutNode.y - 60,
         projectId: id,
       };
     });
 
-    const edgesToSave = graphData.edges.map((e: any, i: number) => ({
-      edgeId: `e${i}-${e.source}-${e.target}`,
-      source: e.source,
-      target: e.target,
-      label: e.label || '',
-      projectId: id,
-    }));
+    const edgesToSave = graphData.edges
+      .filter((e) => g.hasNode(e.source) && g.hasNode(e.target))
+      .map((e, i) => ({
+        edgeId: `e${i}-${e.source}-${e.target}`,
+        source: e.source,
+        target: e.target,
+        label: e.label || '',
+        projectId: id,
+      }));
 
     // Clear old ones if any
     await prisma.mindNode.deleteMany({ where: { projectId: id } });
     await prisma.mindEdge.deleteMany({ where: { projectId: id } });
 
     // Save to DB
-    await prisma.mindNode.createMany({ data: nodesToSave });
-    await prisma.mindEdge.createMany({ data: edgesToSave });
+    if (nodesToSave.length > 0) await prisma.mindNode.createMany({ data: nodesToSave });
+    if (edgesToSave.length > 0) await prisma.mindEdge.createMany({ data: edgesToSave });
 
     return NextResponse.json({ success: true, project: graphData.title });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Generation failed";
     console.error("Generation error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

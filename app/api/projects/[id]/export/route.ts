@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { ensureSeeded } from "@/lib/seed";
+import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 import { exportToMarkdown, exportToSvgString } from "@/lib/export";
 
 type Context = {
@@ -8,12 +8,14 @@ type Context = {
 };
 
 export async function GET(request: NextRequest, context: Context) {
-  await ensureSeeded();
   const { id } = await context.params;
   const format = request.nextUrl.searchParams.get("format") ?? "markdown";
 
-  const project = await prisma.project.findUnique({
-    where: { id },
+  const userId = await getSessionUserId();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const project = await prisma.project.findFirst({
+    where: { id, userId },
     include: { nodes: true, edges: true },
   });
 

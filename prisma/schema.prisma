@@ -8,14 +8,16 @@ generator client {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  projects      Project[]
+  id              String            @id @default(cuid())
+  name            String?
+  email           String?           @unique
+  emailVerified   DateTime?
+  image           String?
+  accounts        Account[]
+  sessions        Session[]
+  projects        Project[]
+  preferences     UserPreferences?
+  customTemplates CustomTemplate[]
 }
 
 model Account {
@@ -79,17 +81,28 @@ model Source {
 }
 
 model MindNode {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   nodeId    String
   label     String
   summary   String
   category  String
+  tags      Json?
   x         Float?
   y         Float?
   projectId String
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
+}
+
+model UserPreferences {
+  id           String @id @default(cuid())
+  userId       String @unique
+  theme        String @default("dark")
+  defaultDepth String @default("standard")
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model MindEdge {
@@ -102,4 +115,21 @@ model MindEdge {
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
+}
+
+model CustomTemplate {
+  id                 String   @id @default(cuid())
+  name               String
+  emoji              String   @default("📝")
+  description        String
+  tags               String   @default("[]")
+  systemInstructions String
+  defaultDepth       String   @default("standard")
+  suggestedInput     String   @default("any")
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([userId])
 }

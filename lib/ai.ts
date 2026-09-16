@@ -1,19 +1,22 @@
 import { z } from "zod";
-import type { GraphData, Source, DepthLevel } from "@/lib/types";
-import { getMockGraph } from "@/lib/mock-data";
+import { ChatGoogle } from "@langchain/google";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import type { Source, DepthLevel } from "@/lib/types";
+import { CATEGORIES } from "@/lib/constants";
 
 export const GraphSchema = z.object({
+  title: z.string().describe("A concise title for this mindmap project based on the context."),
   nodes: z.array(
     z.object({
       id: z.string(),
       label: z.string(),
       summary: z.string(),
-      category: z.enum(["core", "runtime", "concept", "tool", "pattern", "api"]),
+      category: z.enum(CATEGORIES),
+      tags: z.array(z.string()).optional(),
     }),
   ),
   edges: z.array(
     z.object({
-      id: z.string(),
       source: z.string(),
       target: z.string(),
       label: z.string().optional(),
@@ -32,90 +35,82 @@ function buildContextBundle(sources: Source[]): string {
     .join("\n---\n\n");
 }
 
-function buildPrompt(contextBundle: string, depth: DepthLevel): string {
-  const depthInstruction =
-    depth === "summary"
-      ? "Extract only the top 8-10 core concepts. Be concise and high-level."
-      : depth === "deep"
-        ? "Extract 20-30+ concepts at deep granularity, including sub-topics, edge cases, and implementation details."
-        : "Extract 15-20 key concepts at standard depth, including main topics and notable sub-topics.";
-
-  return `You are a technical concept extractor for mind-map generation.
-
-Given the following source material, extract key technical concepts and their relationships as a hierarchical graph.
-
-${depthInstruction}
-
-Return STRICT JSON matching this exact structure — no markdown fences, no commentary, only raw JSON:
-
-{
-  "nodes": [
-    {
-      "id": "<unique-number-as-string>",
-      "label": "<short concept name, max 4 words>",
-      "summary": "<one sentence explanation, max 80 chars>",
-      "category": "<one of: core | runtime | concept | tool | pattern | api>"
-    }
-  ],
-  "edges": [
-    {
-      "id": "e<source>-<target>",
-      "source": "<source node id>",
-      "target": "<target node id>",
-      "label": "<short verb label, max 3 words>"
-    }
-  ]
+export function getDepthInstruction(depth: DepthLevel): string {
+  switch (depth) {
+    case "summary":
+      return "Extract only the top 8-10 core concepts. Be concise and high-level.";
+    case "deep":
+      return "Extract 20-30+ concepts at deep granularity, including sub-topics, edge cases, and implementation details.";
+    default:
+      return "Extract 15-20 key concepts at standard depth, including main topics and notable sub-topics.";
+  }
 }
 
-Rules:
-- Nodes must form a connected DAG (directed acyclic graph)
-- Edge source/target must reference valid node IDs
-- Categories must be exactly one of: core, runtime, concept, tool, pattern, api
-- Every node must have at least one edge connecting it
-- Summary must be lowercase-starting
-
-SOURCE MATERIAL:
-${contextBundle}`;
-}
-
-function detectTopic(sources: Source[]): string {
-  const allText = sources.map((s) => s.content).join(" ").toLowerCase();
-  if (allText.includes("react") || allText.includes("component") || allText.includes("jsx")) return "React";
-  if (allText.includes("node.js") || allText.includes("nodejs") || allText.includes("event loop")) return "Node.js";
-  if (allText.includes("docker") || allText.includes("container") || allText.includes("compose")) return "Docker";
-  if (allText.includes("graphql") || allText.includes("schema") && allText.includes("resolver")) return "GraphQL";
-  return "React";
+export function getDepthNodeLimit(depth: DepthLevel): number {
+  switch (depth) {
+    case "summary":
+      return 10;
+    case "deep":
+      return 30;
+    default:
+      return 20;
+  }
 }
 
 export async function extractMindMap(
   sources: Source[],
   depth: DepthLevel = "standard",
-): Promise<GraphData> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  systemInstructions?: string,
+): Promise<ExtractedGraph> {
+  const apiKey = process.env.GOOGLE_API_KEY;
 
   if (!apiKey) {
-    const topic = detectTopic(sources);
-    return getMockGraph(topic);
+    throw new Error("GOOGLE_API_KEY is missing. Cannot generate mind map.");
   }
 
   try {
-    const { generateObject } = await import("ai");
-    const { createOpenAI } = await import("@ai-sdk/openai");
-
-    const openai = createOpenAI({ apiKey });
-    const contextBundle = buildContextBundle(sources);
-    const prompt = buildPrompt(contextBundle, depth);
-
-    const result = await generateObject({
-      model: openai("gpt-4o-mini"),
-      schema: GraphSchema,
-      prompt,
+    const model = new ChatGoogle({
+      model: "gemini-3.6-flash",
+      temperature: 0,
+      apiKey,
     });
 
-    return result.object;
+    const structuredModel = model.withStructuredOutput(GraphSchema);
+
+    const templateSection = systemInstructions
+      ? `\nContent-type instructions (from the selected template — follow these closely):\n${systemInstructions}`
+      : "";
+
+    const prompt = ChatPromptTemplate.fromMessages([
+      [
+        "system",
+        `You are a technical concept extractor for mind-map generation.
+Given source material, extract key technical concepts and their relationships as a hierarchical graph.
+{depthInstruction}
+Rules:
+- Produce a title that summarizes the whole body of context.
+- Nodes must form a connected DAG (directed acyclic graph)
+- Edge source/target must reference valid node IDs
+- Categories must be exactly one of: ${CATEGORIES.join(", ")}
+- Every node must have at least one edge connecting it
+- Summary must be lowercase-starting
+- Limit the number of nodes per the depth instruction.
+{templateSection}`,
+      ],
+      ["human", "{contextBundle}"],
+    ]);
+
+    const chain = prompt.pipe(structuredModel);
+
+    const result = await chain.invoke({
+      depthInstruction: getDepthInstruction(depth),
+      templateSection,
+      contextBundle: buildContextBundle(sources),
+    });
+
+    return result as ExtractedGraph;
   } catch (error) {
-    console.error("AI extraction failed, falling back to mock:", error);
-    const topic = detectTopic(sources);
-    return getMockGraph(topic);
+    console.error("AI extraction failed:", error);
+    throw error;
   }
 }

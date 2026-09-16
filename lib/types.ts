@@ -1,4 +1,4 @@
-export type SourceType = "text" | "url" | "pdf";
+export type SourceType = "text" | "link" | "file";
 
 export interface Source {
   id: string;
@@ -57,6 +57,7 @@ export interface CreateProjectRequest {
 }
 
 export type SessionUser = {
+  id: string;
   name?: string | null;
   email?: string | null;
   image?: string | null;

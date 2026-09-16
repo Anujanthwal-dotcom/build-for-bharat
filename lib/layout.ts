@@ -1,8 +1,8 @@
 import dagre from "@dagrejs/dagre";
 import type { MindMapEdge, MindMapNode, LayoutDirection } from "@/lib/types";
 
-const NODE_WIDTH = 220;
-const NODE_HEIGHT = 84;
+const NODE_WIDTH = 250;
+const NODE_HEIGHT = 120;
 const HORIZONTAL_SPACING = 48;
 const VERTICAL_SPACING = 32;
 

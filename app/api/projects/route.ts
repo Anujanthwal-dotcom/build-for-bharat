@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { ensureSeeded } from "@/lib/seed";
+import { prisma } from "@/lib/prisma";
+import { getSessionUserId } from "@/lib/auth";
 
 export async function GET() {
-  await ensureSeeded();
+  const userId = await getSessionUserId();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const projects = await prisma.project.findMany({
+    where: { userId },
     orderBy: { updatedAt: "desc" },
     include: {
       _count: { select: { nodes: true, sources: true } },
