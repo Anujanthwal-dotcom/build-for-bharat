@@ -160,6 +160,20 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
     [nodes, setCenter],
   );
 
+  // Edit node content from the detail panel
+  const handleUpdateNode = useCallback(
+    (nodeId: string, patch: Partial<{ label: string; summary: string; category: string; tags: string[] }>) => {
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === nodeId
+            ? { ...n, data: { ...(n.data as Record<string, unknown>), ...patch } }
+            : n,
+        ),
+      );
+    },
+    [setNodes],
+  );
+
   // Build detail panel data
   const detailNode = useMemo(() => {
     if (!detailNodeId) return null;
@@ -313,6 +327,7 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
             connectedNodes={connectedNodes}
             onClose={() => { setDetailNodeId(null); setSelectedNodeId(null); }}
             onNavigate={handleDetailNavigate}
+            onUpdateNode={handleUpdateNode}
           />
         </div>
       </div>
