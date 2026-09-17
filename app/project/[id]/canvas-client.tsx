@@ -1,10 +1,32 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { ReactFlow, Background, MiniMap, useReactFlow, ReactFlowProvider, useNodesState, useEdgesState, addEdge, BackgroundVariant, type Node, type Edge, type Connection } from '@xyflow/react';
+import {
+  ReactFlow,
+  Background,
+  MiniMap,
+  useReactFlow,
+  ReactFlowProvider,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  BackgroundVariant,
+  type Node,
+  type Edge,
+  type Connection,
+} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { ArrowLeft, Share, Check, LayoutTemplate, Layers, Film, Bot } from 'lucide-react';
+import {
+  ArrowLeft,
+  Share,
+  Check,
+  LayoutTemplate,
+  Layers,
+  Film,
+  Bot,
+  Plus,
+} from 'lucide-react';
 import Link from 'next/link';
 
 import CustomNode from '@/components/flow/custom-node';
@@ -15,6 +37,8 @@ import { ExportMenu } from '@/components/project/export-menu';
 import { SourceInspector } from '@/components/project/source-inspector';
 import { ScriptStudio } from '@/components/project/script-studio';
 import { CanvasFloatingTour } from '@/components/onboarding/canvas-floating-tour';
+import { AddConceptModal } from '@/components/project/add-concept-modal';
+import { ConceptDeepModal } from '@/components/project/concept-deep-modal';
 import { calculateDagreLayout } from '@/lib/layout';
 import { generateSemanticCreatorScript, type CreatorScript } from '@/lib/creator-script';
 import type { Source } from '@/lib/types';
@@ -30,7 +54,13 @@ interface CanvasClientProps {
   initialEdges: Edge[];
 }
 
-function CanvasContent({ projectId, project, sources, initialNodes: _initialNodes, initialEdges: _initialEdges }: CanvasClientProps) {
+function CanvasContent({
+  projectId,
+  project,
+  sources,
+  initialNodes: _initialNodes,
+  initialEdges: _initialEdges,
+}: CanvasClientProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(_initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(_initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -40,7 +70,12 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
   const [linkCopied, setLinkCopied] = useState(false);
   const [isScriptStudioOpen, setIsScriptStudioOpen] = useState(false);
   const [isCanvasTourOpen, setIsCanvasTourOpen] = useState(false);
+  const [isAddConceptOpen, setIsAddConceptOpen] = useState(false);
+  const [addConceptParentId, setAddConceptParentId] = useState<string | null>(null);
+  const [isDeepModalOpen, setIsDeepModalOpen] = useState(false);
+  const [deepModalNodeId, setDeepModalNodeId] = useState<string | null>(null);
   const [creatorScript, setCreatorScript] = useState<CreatorScript | null>(null);
+
   const { setCenter, fitView } = useReactFlow();
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInitialMountRef = useRef(true);
@@ -115,10 +150,37 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
     (params: Connection) => {
       const sourceHandle = params.sourceHandle ?? `s-${Math.min(edges.filter((e) => e.source === params.source).length, 9)}`;
       const targetHandle = params.targetHandle ?? `t-${Math.min(edges.filter((e) => e.target === params.target).length, 9)}`;
-      const id = `e-${params.source}->${params.target}`;
+      const id = `e-${params.source}->${params.target}-${Date.now()}`;
       setEdges((eds) => addEdge({ ...params, id, type: 'custom', sourceHandle, targetHandle }, eds));
     },
     [edges, setEdges],
+  );
+
+  const handleConnectNodes = useCallback(
+    (sourceId: string, targetId: string, label?: string) => {
+      const exists = edges.some((e) => e.source === sourceId && e.target === targetId);
+      if (exists) return;
+      const outIndex = Math.min(edges.filter((e) => e.source === sourceId).length, 9);
+      const inIndex = Math.min(edges.filter((e) => e.target === targetId).length, 9);
+      const newEdge: Edge = {
+        id: `e-${sourceId}->${targetId}-${Date.now()}`,
+        source: sourceId,
+        target: targetId,
+        sourceHandle: `s-${outIndex}`,
+        targetHandle: `t-${inIndex}`,
+        type: 'custom',
+        data: { label: label || "" },
+      };
+      setEdges((eds) => [...eds, newEdge]);
+    },
+    [edges, setEdges],
+  );
+
+  const handleDeleteEdge = useCallback(
+    (edgeId: string) => {
+      setEdges((eds) => eds.filter((e) => e.id !== edgeId));
+    },
+    [setEdges],
   );
 
   const onNodesDelete = useCallback(() => { setSaveStatus("unsaved"); }, []);
@@ -148,6 +210,81 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
     );
   }, [nodes, edges, setNodes]);
 
+  // Handle adding a new concept node
+  const handleAddConcept = useCallback(
+    (concept: {
+      label: string;
+      summary: string;
+      category: string;
+      parentId?: string;
+      edgeLabel?: string;
+      tags: string[];
+      autoLayout: boolean;
+    }) => {
+      const newId = `node_${Date.now()}`;
+      let posX = 120;
+      let posY = 120;
+
+      if (concept.parentId) {
+        const parent = nodes.find((n) => n.id === concept.parentId);
+        if (parent) {
+          const siblingEdges = edges.filter((e) => e.source === concept.parentId);
+          const childIndex = siblingEdges.length;
+          // Non-overlapping offset: position to the right and staggered vertically for each child
+          posX = parent.position.x + 320;
+          posY = parent.position.y + (childIndex * 150);
+        }
+      } else if (nodes.length > 0) {
+        const last = nodes[nodes.length - 1];
+        posX = last.position.x;
+        posY = last.position.y + 150;
+      }
+
+      const newNode: Node = {
+        id: newId,
+        type: "custom",
+        position: { x: posX, y: posY },
+        data: {
+          label: concept.label,
+          summary: concept.summary,
+          category: concept.category,
+          tags: concept.tags,
+        },
+      };
+
+      let newEdges = edges;
+      if (concept.parentId) {
+        const outIndex = Math.min(edges.filter((e) => e.source === concept.parentId).length, 9);
+        const inIndex = 0;
+        const newEdge: Edge = {
+          id: `e-${concept.parentId}->${newId}-${Date.now()}`,
+          source: concept.parentId,
+          target: newId,
+          sourceHandle: `s-${outIndex}`,
+          targetHandle: `t-${inIndex}`,
+          type: "custom",
+          data: { label: concept.edgeLabel || "" },
+        };
+        newEdges = [...edges, newEdge];
+      }
+
+      const updatedNodes = [...nodes, newNode];
+      setNodes(updatedNodes);
+      setEdges(newEdges);
+
+      setSelectedNodeId(newId);
+      setDetailNodeId(newId);
+      setCenter(posX + 120, posY + 50, { zoom: 1.1, duration: 400 });
+
+      if (concept.autoLayout) {
+        setTimeout(() => {
+          handleAutoLayout();
+        }, 60);
+      }
+    },
+    [nodes, edges, setNodes, setEdges, setCenter, handleAutoLayout],
+  );
+
   const handleOutlineSelect = useCallback(
     (nodeId: string) => {
       setSelectedNodeId(nodeId);
@@ -163,15 +300,18 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
     setTimeout(() => setLinkCopied(false), 2000);
   }, []);
 
-  const outline = useMemo(() => nodes.map((n) => ({ id: n.id, label: ((n.data as Record<string, unknown>).label as string) ?? "" })), [nodes]);
+  const outline = useMemo(
+    () => nodes.map((n) => ({ id: n.id, label: ((n.data as Record<string, unknown>).label as string) ?? "" })),
+    [nodes],
+  );
 
-  // Node click → open detail panel
+  // Node click -> open detail panel & highlight
   const onNodeClick = useCallback((_: unknown, node: Node) => {
     setSelectedNodeId(node.id);
     setDetailNodeId(node.id);
   }, []);
 
-  // Pane click → close detail panel
+  // Pane click -> close detail panel
   const onPaneClick = useCallback(() => {
     setDetailNodeId(null);
     setSelectedNodeId(null);
@@ -217,6 +357,21 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
     };
   }, [detailNodeId, nodes]);
 
+  // Build deep modal data
+  const deepModalNode = useMemo(() => {
+    if (!deepModalNodeId) return null;
+    const n = nodes.find((nd) => nd.id === deepModalNodeId);
+    if (!n) return null;
+    const d = n.data as Record<string, unknown>;
+    return {
+      id: n.id,
+      label: (d.label as string) ?? "",
+      summary: (d.summary as string) ?? "",
+      category: (d.category as string) ?? "default",
+      tags: (d.tags as string[]) ?? [],
+    };
+  }, [deepModalNodeId, nodes]);
+
   const connectedNodes = useMemo(() => {
     if (!detailNodeId) return [];
     return edges
@@ -227,13 +382,50 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
         const otherNode = nodes.find((n) => n.id === otherId);
         const otherData = otherNode?.data as Record<string, unknown> | undefined;
         return {
+          edgeId: e.id,
           id: otherId,
-          label: (otherData?.label as string) ?? "",
+          label: (otherData?.label as string) ?? otherId,
           edgeLabel: ((e.data as Record<string, unknown> | undefined)?.label as string) ?? "",
           direction: (isOutgoing ? "outgoing" : "incoming") as "incoming" | "outgoing",
         };
       });
   }, [detailNodeId, edges, nodes]);
+
+  // Nodes with interactive callbacks attached to data for direct canvas actions
+  const nodesWithCallbacks = useMemo(() => {
+    return nodes.map((n) => ({
+      ...n,
+      data: {
+        ...(n.data as Record<string, unknown>),
+        onAddSubcard: (nodeId: string) => {
+          setAddConceptParentId(nodeId);
+          setIsAddConceptOpen(true);
+        },
+        onInspect: (nodeId: string) => {
+          setSelectedNodeId(nodeId);
+          setDetailNodeId(nodeId);
+        },
+      },
+    }));
+  }, [nodes]);
+
+  // Illuminated path styling when a node is selected
+  const displayedEdges = useMemo(() => {
+    if (!selectedNodeId) return edges;
+    return edges.map((e) => {
+      const isConnected = e.source === selectedNodeId || e.target === selectedNodeId;
+      return isConnected
+        ? {
+            ...e,
+            animated: true,
+            style: { stroke: "#E2E0D9", strokeWidth: 2.5, opacity: 1 },
+          }
+        : {
+            ...e,
+            style: { opacity: 0.25 },
+          };
+    });
+  }, [edges, selectedNodeId]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -258,45 +450,69 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
           event.preventDefault();
           fitView({ padding: 0.2, duration: 400 });
           break;
-        case "s":
-          event.preventDefault();
-          setIsSidebarOpen((open) => !open);
-          break;
       }
     },
-    [nodes, edges, saveGraph, handleAutoLayout, fitView],
+    [fitView, handleAutoLayout, nodes, edges, saveGraph],
+  );
+
+  const existingNodesList = useMemo(
+    () => nodes.map((n) => ({ id: n.id, label: ((n.data as Record<string, unknown>).label as string) ?? n.id })),
+    [nodes],
   );
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden text-foreground" tabIndex={0} onKeyDown={handleKeyDown}>
-      {/* Source Inspector sidebar (left) */}
-      {isSidebarOpen && (
+    <div className="flex h-screen w-full bg-[#09090b] text-white overflow-hidden font-sans select-none" onKeyDown={handleKeyDown} tabIndex={-1}>
+      {/* Collapsible Left Sidebar */}
+      <div className={`transition-all duration-300 border-r border-white/10 bg-[#0d0d11] flex flex-col z-20 ${isSidebarOpen ? 'w-80' : 'w-0 overflow-hidden'}`}>
+        <div className="p-4 border-b border-white/5 flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2 text-xs text-muted hover:text-white transition-colors cursor-pointer">
+            <ArrowLeft className="w-4 h-4" />
+            <span>Dashboard</span>
+          </Link>
+          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-white/5 border border-white/10 text-muted">
+            {nodes.length} Nodes
+          </span>
+        </div>
+        
         <SourceInspector
           sources={sources}
           outline={outline}
-          selectedNodeId={selectedNodeId}
           onOutlineSelect={handleOutlineSelect}
+          selectedNodeId={selectedNodeId}
         />
-      )}
+      </div>
 
-      <div className="flex flex-col flex-1 min-w-0">
-        {/* Top Navigation Overlay */}
-        <div data-tour="canvas-header" className="h-14 bg-black/40 backdrop-blur-md border-b border-white/5 z-40 flex items-center justify-between px-4 shrink-0">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-muted hover:text-white">
-              <ArrowLeft className="w-4 h-4" />
-            </Link>
-            <div className="h-4 w-px bg-white/10" />
-            <div>
-              <h1 className="text-sm font-medium text-white/90">{project.name}</h1>
-              <p className="text-[10px] text-muted font-mono">Generated from {project.sourcesCount} sources · {nodes.length} Nodes</p>
-            </div>
+      <div className="flex-1 flex flex-col h-full relative">
+        {/* Canvas Header Toolbar */}
+        <div className="h-14 border-b border-white/10 bg-[#0d0d11]/80 backdrop-blur-md px-6 flex items-center justify-between z-10">
+          <div className="flex items-center gap-3">
+            <h1 className="font-semibold text-sm text-white/90 truncate max-w-sm">{project.name}</h1>
+            <span className="text-xs text-muted font-mono">•</span>
+            <span className="text-xs text-muted font-mono flex items-center gap-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${
+                saveStatus === "saved"
+                  ? "bg-emerald-400"
+                  : saveStatus === "saving"
+                  ? "bg-amber-400 animate-ping"
+                  : "bg-zinc-500"
+              }`} />
+              {saveStatus === "saved" ? "Saved" : saveStatus === "saving" ? "Saving..." : "Unsaved"}
+            </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${saveStatus === "saved" ? "text-zinc-500" : saveStatus === "saving" ? "text-amber-400/80" : "text-zinc-400"}`}>
-              {saveStatus === "saved" ? "Saved" : saveStatus === "saving" ? "Saving…" : "Unsaved changes"}
-            </span>
+          <div className="flex items-center gap-2">
+            {/* Add Concept button */}
+            <button
+              onClick={() => {
+                setAddConceptParentId(null);
+                setIsAddConceptOpen(true);
+              }}
+              className="p-1.5 bg-accent text-black hover:bg-accent/90 rounded-md transition-all flex items-center gap-1.5 text-xs font-medium px-3 shadow-sm cursor-pointer"
+              title="Add a new concept node to the mind map"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Concept</span>
+            </button>
 
             {/* Script Studio button */}
             <button
@@ -327,11 +543,19 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
               <LayoutTemplate className="w-3.5 h-3.5" />
               Auto-Layout
             </button>
+
             <div className="h-4 w-px bg-white/10" />
+
             <ExportMenu projectId={projectId} />
-            <button onClick={handleShare} className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-muted hover:text-white cursor-pointer" title="Copy link">
+
+            <button
+              onClick={handleShare}
+              className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-muted hover:text-white cursor-pointer"
+              title="Copy link"
+            >
               {linkCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share className="w-4 h-4" />}
             </button>
+
             <button
               data-tour="canvas-sources"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -346,8 +570,8 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
         {/* Main Canvas Area */}
         <div data-tour="canvas-flow" className="flex-1 relative">
           <ReactFlow
-            nodes={nodes}
-            edges={edges}
+            nodes={nodesWithCallbacks}
+            edges={displayedEdges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
@@ -382,12 +606,51 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
             onClose={() => { setDetailNodeId(null); setSelectedNodeId(null); }}
             onNavigate={handleDetailNavigate}
             onUpdateNode={handleUpdateNode}
+            onConnectNodes={handleConnectNodes}
+            onDeleteEdge={handleDeleteEdge}
+            allNodes={existingNodesList}
+            onAddSubConcept={(parentId) => {
+              setAddConceptParentId(parentId);
+              setIsAddConceptOpen(true);
+            }}
+            onOpenDeepModal={(nodeId) => {
+              setDeepModalNodeId(nodeId);
+              setIsDeepModalOpen(true);
+            }}
+          />
+
+          {/* Add Concept Modal */}
+          <AddConceptModal
+            isOpen={isAddConceptOpen}
+            onClose={() => {
+              setIsAddConceptOpen(false);
+              setAddConceptParentId(null);
+            }}
+            onAdd={handleAddConcept}
+            existingNodes={existingNodesList}
+            initialParentId={addConceptParentId}
+          />
+
+          {/* Fullscreen Concept Deep-Dive Modal */}
+          <ConceptDeepModal
+            isOpen={isDeepModalOpen}
+            onClose={() => {
+              setIsDeepModalOpen(false);
+              setDeepModalNodeId(null);
+            }}
+            node={deepModalNode}
+            onAddSubConcept={(parentId) => {
+              setAddConceptParentId(parentId);
+              setIsAddConceptOpen(true);
+            }}
           />
 
           {/* Script Studio Modal */}
           <ScriptStudio
             script={creatorScript}
             projectName={project.name}
+            nodes={nodes}
+            edges={edges}
             isOpen={isScriptStudioOpen}
             onClose={() => setIsScriptStudioOpen(false)}
             onSelectNode={handleOutlineSelect}

@@ -6,10 +6,10 @@ import { FolderGit2, Blocks, BookOpen, Settings, Bot } from "lucide-react";
 import { useUIStore } from "@/lib/store/ui-store";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Projects", icon: FolderGit2, exact: true },
-  { href: "/dashboard/templates", label: "Templates", icon: Blocks, exact: false },
-  { href: "/dashboard/docs", label: "Documentation", icon: BookOpen, exact: false },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings, exact: false },
+  { href: "/dashboard", label: "Projects", icon: FolderGit2, exact: true, tourId: "nav-projects" },
+  { href: "/dashboard/templates", label: "Templates", icon: Blocks, exact: false, tourId: "nav-templates" },
+  { href: "/dashboard/docs", label: "Documentation", icon: BookOpen, exact: false, tourId: "nav-docs" },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings, exact: false, tourId: "nav-settings" },
 ];
 
 export function SidebarNav() {
@@ -28,6 +28,7 @@ export function SidebarNav() {
           <Link
             key={item.href}
             href={item.href}
+            data-tour={item.tourId}
             className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-[background-color,color] outline-none focus:outline-none focus-visible:outline-none ${
               active
                 ? "bg-white/10 text-white font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] border border-white/5"
