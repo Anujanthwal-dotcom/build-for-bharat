@@ -31,7 +31,7 @@ export default function DashboardClient({ projects }: DashboardClientProps) {
     <>
       {/* Top Bar */}
       <header className="h-16 border-b border-white/5 px-6 flex items-center justify-between flex-shrink-0 bg-white/[0.01]">
-        <div className="relative w-64">
+        <div data-tour="search-bar" className="relative w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
@@ -43,6 +43,7 @@ export default function DashboardClient({ projects }: DashboardClientProps) {
         </div>
 
         <button
+          data-tour="new-project-btn"
           onClick={openDumpWindow}
           className="flex items-center gap-2 bg-accent text-black font-medium px-4 py-1.5 rounded-md hover:bg-accent/90 transition-colors text-sm shadow-[0_0_15px_rgba(226,224,217,0.3)]"
         >
@@ -58,7 +59,7 @@ export default function DashboardClient({ projects }: DashboardClientProps) {
             <h2 className="text-xl font-semibold text-white/90 tracking-tight mb-6">Recent Mindmaps</h2>
 
             {filtered.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div data-tour="projects-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filtered.map((project) => (
                   <ProjectCard key={project.id} project={project} />
                 ))}

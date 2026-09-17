@@ -19,6 +19,12 @@
   --animate-fade-in-up: fade-in-up 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-pulse-glow: pulse-glow 3s ease-in-out infinite;
   --animate-slide-in-right: slide-in-right 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dash-flow: dash-flow 1.2s linear infinite;
+  --animate-mascot-bob: mascot-bob 3s ease-in-out infinite;
+  --animate-bot-blink: bot-blink 4s ease-in-out infinite;
+  --animate-bot-wave: bot-wave 1.6s ease-in-out infinite;
+  --animate-bot-point: bot-point 1.4s ease-in-out infinite;
+  --animate-bot-celebrate: bot-celebrate 1.5s ease-in-out infinite;
 
   @keyframes fade-in {
     from {
@@ -58,6 +64,66 @@
     to {
       transform: translateX(0);
       opacity: 1;
+    }
+  }
+
+  @keyframes dash-flow {
+    to {
+      stroke-dashoffset: -20;
+    }
+  }
+
+  @keyframes mascot-bob {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes bot-blink {
+    0%, 90%, 100% {
+      transform: scaleY(1);
+    }
+    95% {
+      transform: scaleY(0.1);
+    }
+  }
+
+  @keyframes bot-wave {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(14deg);
+    }
+    75% {
+      transform: rotate(-10deg);
+    }
+  }
+
+  @keyframes bot-point {
+    0%, 100% {
+      transform: scale(1) translateX(0);
+    }
+    50% {
+      transform: scale(1.08) translateX(4px);
+    }
+  }
+
+  @keyframes bot-celebrate {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-6px) rotate(8deg);
+    }
+  }
+
+  @keyframes tour-curve {
+    to {
+      stroke-dashoffset: -40;
     }
   }
 
@@ -136,4 +202,13 @@ input[type="radio"],
 input[type="file"],
 .cursor-pointer {
   cursor: pointer;
+}
+
+.tour-curve {
+  stroke-dasharray: 6 8;
+  animation: tour-curve 3s linear infinite;
+}
+
+.tour-curve.reverse {
+  animation-direction: reverse;
 }

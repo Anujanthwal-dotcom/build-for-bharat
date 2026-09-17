@@ -14,6 +14,10 @@ interface UIState {
   isOnboardingTourOpen: boolean;
   completeOnboardingTour: () => void;
   startOnboardingTour: () => void;
+
+  isFloatingTourOpen: boolean;
+  startFloatingTour: () => void;
+  completeFloatingTour: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -29,4 +33,8 @@ export const useUIStore = create<UIState>((set) => ({
   isOnboardingTourOpen: false, // Default to true if you want it on first load
   completeOnboardingTour: () => set({ isOnboardingTourOpen: false }),
   startOnboardingTour: () => set({ isOnboardingTourOpen: true }),
+
+  isFloatingTourOpen: false,
+  startFloatingTour: () => set({ isFloatingTourOpen: true, isOnboardingTourOpen: false }),
+  completeFloatingTour: () => set({ isFloatingTourOpen: false }),
 }));

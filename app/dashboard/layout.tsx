@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { BrainCircuit } from 'lucide-react';
 import OnboardingTour from '@/components/onboarding-tour';
+import { FloatingCharacterTour } from '@/components/onboarding/floating-character-tour';
 import { SignOutButton } from '@/components/auth/sign-out-button';
 import { SidebarNav } from '@/components/dashboard/sidebar-nav';
 
@@ -72,6 +73,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </main>
       
       <OnboardingTour />
+      <FloatingCharacterTour />
     </div>
   );
 }

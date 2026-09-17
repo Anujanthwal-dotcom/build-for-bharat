@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderGit2, Blocks, BookOpen, Settings } from "lucide-react";
+import { FolderGit2, Blocks, BookOpen, Settings, Bot } from "lucide-react";
+import { useUIStore } from "@/lib/store/ui-store";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Projects", icon: FolderGit2, exact: true },
@@ -13,9 +14,10 @@ const NAV_ITEMS = [
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const startFloatingTour = useUIStore((state) => state.startFloatingTour);
 
   return (
-    <nav className="p-4 space-y-1">
+    <nav data-tour="sidebar-nav" className="p-4 space-y-1">
       {NAV_ITEMS.map((item) => {
         const active = item.exact
           ? pathname === item.href
@@ -37,6 +39,28 @@ export function SidebarNav() {
           </Link>
         );
       })}
+
+      {/* Guided Tour Summon Button */}
+      <div data-tour="sidebar-tour" className="pt-3 mt-3 border-t border-white/5">
+        <button
+          onClick={() => startFloatingTour()}
+          className="w-full text-left rounded-lg border border-white/10 bg-white/[0.02] p-2.5 transition-all hover:border-white/20 hover:bg-white/[0.05] group cursor-pointer"
+          title="Start interactive guided tour with Leo"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white/5 text-accent border border-white/10 group-hover:scale-105 transition-transform">
+              <Bot className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-medium text-white/90 flex items-center gap-1.5">
+                Guided Tour
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent/80 animate-ping" />
+              </div>
+              <div className="text-[10px] text-muted font-mono">Explore with Leo</div>
+            </div>
+          </div>
+        </button>
+      </div>
     </nav>
   );
 }

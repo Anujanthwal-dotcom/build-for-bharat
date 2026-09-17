@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { ReactFlow, Background, MiniMap, useReactFlow, ReactFlowProvider, useNodesState, useEdgesState, addEdge, BackgroundVariant, type Node, type Edge, type Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { ArrowLeft, Share, Check, LayoutTemplate, Layers } from 'lucide-react';
+import { ArrowLeft, Share, Check, LayoutTemplate, Layers, Film, Bot } from 'lucide-react';
 import Link from 'next/link';
 
 import CustomNode from '@/components/flow/custom-node';
@@ -13,7 +13,10 @@ import { NodeDetailPanel } from '@/components/flow/node-detail-panel';
 import { CanvasControls } from '@/components/flow/canvas-controls';
 import { ExportMenu } from '@/components/project/export-menu';
 import { SourceInspector } from '@/components/project/source-inspector';
+import { ScriptStudio } from '@/components/project/script-studio';
+import { CanvasFloatingTour } from '@/components/onboarding/canvas-floating-tour';
 import { calculateDagreLayout } from '@/lib/layout';
+import { generateSemanticCreatorScript, type CreatorScript } from '@/lib/creator-script';
 import type { Source } from '@/lib/types';
 
 const nodeTypes = { custom: CustomNode };
@@ -35,9 +38,34 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [isScriptStudioOpen, setIsScriptStudioOpen] = useState(false);
+  const [isCanvasTourOpen, setIsCanvasTourOpen] = useState(false);
+  const [creatorScript, setCreatorScript] = useState<CreatorScript | null>(null);
   const { setCenter, fitView } = useReactFlow();
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInitialMountRef = useRef(true);
+
+  const handleOpenScriptStudio = useCallback(() => {
+    const extractedNodes = nodes.map((n) => {
+      const d = n.data as Record<string, unknown>;
+      return {
+        id: n.id,
+        label: (d.label as string) ?? n.id,
+        summary: (d.summary as string) ?? "",
+        category: (d.category as string) ?? "core",
+        tags: (d.tags as string[]) ?? [],
+      };
+    });
+    const extractedEdges = edges.map((e) => ({
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      label: ((e.data as Record<string, unknown> | undefined)?.label as string) ?? "",
+    }));
+    const generated = generateSemanticCreatorScript(project.name, extractedNodes, extractedEdges);
+    setCreatorScript(generated);
+    setIsScriptStudioOpen(true);
+  }, [nodes, edges, project.name]);
 
   const saveGraph = useCallback(async (nodesToSave: Node[], edgesToSave: Edge[]) => {
     setSaveStatus("saving");
@@ -253,7 +281,7 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
 
       <div className="flex flex-col flex-1 min-w-0">
         {/* Top Navigation Overlay */}
-        <div className="h-14 bg-black/40 backdrop-blur-md border-b border-white/5 z-40 flex items-center justify-between px-4 shrink-0">
+        <div data-tour="canvas-header" className="h-14 bg-black/40 backdrop-blur-md border-b border-white/5 z-40 flex items-center justify-between px-4 shrink-0">
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-muted hover:text-white">
               <ArrowLeft className="w-4 h-4" />
@@ -270,18 +298,44 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
               {saveStatus === "saved" ? "Saved" : saveStatus === "saving" ? "Saving…" : "Unsaved changes"}
             </span>
 
-            <button onClick={handleAutoLayout} className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-colors text-muted hover:text-white flex items-center gap-2 text-xs font-medium px-3">
+            {/* Script Studio button */}
+            <button
+              data-tour="canvas-script"
+              onClick={handleOpenScriptStudio}
+              className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-colors text-muted hover:text-white flex items-center gap-1.5 text-xs font-medium px-2.5 cursor-pointer"
+              title="Open Creator Script & Lecture Studio"
+            >
+              <Film className="w-3.5 h-3.5 text-accent" />
+              <span>Script Studio</span>
+            </button>
+
+            {/* Guided Tour button */}
+            <button
+              onClick={() => setIsCanvasTourOpen(true)}
+              className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-colors text-muted hover:text-white flex items-center gap-1.5 text-xs font-medium px-2.5 cursor-pointer"
+              title="Launch Guided Canvas Tour"
+            >
+              <Bot className="w-3.5 h-3.5 text-accent" />
+              <span>Tour</span>
+            </button>
+
+            <button
+              data-tour="canvas-layout"
+              onClick={handleAutoLayout}
+              className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-colors text-muted hover:text-white flex items-center gap-2 text-xs font-medium px-3 cursor-pointer"
+            >
               <LayoutTemplate className="w-3.5 h-3.5" />
               Auto-Layout
             </button>
             <div className="h-4 w-px bg-white/10" />
             <ExportMenu projectId={projectId} />
-            <button onClick={handleShare} className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-muted hover:text-white" title="Copy link">
+            <button onClick={handleShare} className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-muted hover:text-white cursor-pointer" title="Copy link">
               {linkCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share className="w-4 h-4" />}
             </button>
             <button
+              data-tour="canvas-sources"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={`p-1.5 rounded-md transition-colors ${isSidebarOpen ? 'bg-accent/20 text-accent' : 'hover:bg-white/10 text-muted hover:text-white'}`}
+              className={`p-1.5 rounded-md transition-colors cursor-pointer ${isSidebarOpen ? 'bg-accent/20 text-accent' : 'hover:bg-white/10 text-muted hover:text-white'}`}
               title="Toggle sources"
             >
               <Layers className="w-4 h-4" />
@@ -290,7 +344,7 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
         </div>
 
         {/* Main Canvas Area */}
-        <div className="flex-1 relative">
+        <div data-tour="canvas-flow" className="flex-1 relative">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -328,6 +382,21 @@ function CanvasContent({ projectId, project, sources, initialNodes: _initialNode
             onClose={() => { setDetailNodeId(null); setSelectedNodeId(null); }}
             onNavigate={handleDetailNavigate}
             onUpdateNode={handleUpdateNode}
+          />
+
+          {/* Script Studio Modal */}
+          <ScriptStudio
+            script={creatorScript}
+            projectName={project.name}
+            isOpen={isScriptStudioOpen}
+            onClose={() => setIsScriptStudioOpen(false)}
+            onSelectNode={handleOutlineSelect}
+          />
+
+          {/* Canvas Floating Guided Tour */}
+          <CanvasFloatingTour
+            isOpen={isCanvasTourOpen}
+            onClose={() => setIsCanvasTourOpen(false)}
           />
         </div>
       </div>

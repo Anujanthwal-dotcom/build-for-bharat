@@ -8,7 +8,7 @@ interface GlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<string, string> = {
   primary:
-    "bg-gradient-to-r from-blue-600 to-violet-600 text-white font-medium shadow-lg shadow-violet-600/25 hover:shadow-violet-600/40 hover:brightness-110",
+    "bg-accent text-black font-medium hover:bg-accent/90 shadow-[0_0_15px_rgba(226,224,217,0.2)] transition-all",
   secondary:
     "bg-white/[0.06] text-zinc-100 border border-white/10 hover:bg-white/[0.12] backdrop-blur-xl",
   ghost: "bg-transparent text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06]",
@@ -30,7 +30,7 @@ export const GlassButton = forwardRef<HTMLButtonElement, GlassButtonProps>(
         ref={ref}
         className={cn(
           "inline-flex items-center justify-center rounded-lg transition-all duration-200",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950",
           "disabled:pointer-events-none disabled:opacity-50",
           variants[variant],
           sizes[size],
