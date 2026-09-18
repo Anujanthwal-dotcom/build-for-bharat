@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "init": "bun -e \"const file = Bun.file('prisma/dev.db'); if(!await file.exist()) await Bun.write(file, '')\"",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-   "postinstall": "prisma generate"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
