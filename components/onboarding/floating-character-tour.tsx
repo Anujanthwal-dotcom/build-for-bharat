@@ -9,9 +9,7 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
-import { CartoonMascot, MascotMood } from "./cartoon-mascot";
 import { CurlyArrow } from "./curly-arrow";
-import { GlassButton } from "@/components/ui/glass-button";
 import { useUIStore } from "@/lib/store/ui-store";
 
 interface TourStep {
@@ -20,8 +18,8 @@ interface TourStep {
   title: string;
   description: string;
   tip: string;
-  mascotMood: MascotMood;
-  speech: string;
+  mascotMood?: string;
+  speech?: string;
   arrowLabel?: string;
   preferredPlacement: "right" | "bottom" | "top" | "left";
 }
@@ -260,6 +258,18 @@ export function FloatingCharacterTour() {
   // Character hand coordinate estimate
   const mascotCenterX = cardX + 75;
   const mascotCenterY = cardY + 75;
+  // Arrow origin from the card edge nearest to the target
+  const arrowStartX = targetCenterX < cardX
+    ? cardX
+    : targetCenterX > cardX + 390
+    ? cardX + 390
+    : Math.min(Math.max(cardX + 40, targetCenterX), cardX + 350);
+
+  const arrowStartY = targetCenterY < cardY
+    ? cardY
+    : targetCenterY > cardY + 220
+    ? cardY + 220
+    : Math.min(Math.max(cardY + 30, targetCenterY), cardY + 180);
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden select-none">
@@ -308,17 +318,17 @@ export function FloatingCharacterTour() {
         )}
       </svg>
 
-      {/* Playful Curly Arrow connecting Echo to the spotlighted element */}
+      {/* Playful Curly Arrow connecting Card to the spotlighted element */}
       {targetRect && (
         <CurlyArrow
-          start={{ x: mascotCenterX, y: mascotCenterY }}
+          start={{ x: arrowStartX, y: arrowStartY }}
           end={{ x: targetCenterX, y: targetCenterY }}
           loop={true}
           label={step.arrowLabel}
         />
       )}
 
-      {/* Floating Echo Mascot & Instruction Card Container */}
+      {/* Floating Instruction Card Container */}
       <div
         style={{
           transform: `translate3d(${cardX}px, ${cardY}px, 0)`,
@@ -326,16 +336,6 @@ export function FloatingCharacterTour() {
         }}
         className="absolute top-0 left-0 z-50 flex flex-col items-start gap-2.5 pointer-events-auto max-w-[390px]"
       >
-        {/* Floating Cartoon Dolphin (Echo) */}
-        <div className="flex items-end gap-2.5">
-          <CartoonMascot
-            mood={step.mascotMood}
-            placement={actualPlacement}
-            speechText={step.speech}
-            size="sm"
-          />
-        </div>
-
         {/* Floating Instruction Card */}
         <div className="w-full rounded-2xl border border-white/10 bg-[#121214] p-5 shadow-[0_24px_64px_rgba(0,0,0,0.85)] backdrop-blur-2xl animate-fade-in-up">
           {/* Card Header */}

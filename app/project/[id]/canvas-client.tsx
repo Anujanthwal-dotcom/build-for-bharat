@@ -204,14 +204,12 @@ function CanvasContent({
     (sourceId: string, targetId: string) => {
       const exists = edges.some((e) => e.source === sourceId && e.target === targetId);
       if (!exists) {
-        const sourceEdges = edges.filter((e) => e.source === sourceId);
-        const targetEdges = edges.filter((e) => e.target === targetId);
         const newEdge: Edge = {
           id: `e-${sourceId}->${targetId}-${Date.now()}`,
           source: sourceId,
           target: targetId,
-          sourceHandle: `s-${Math.min(sourceEdges.length, 9)}`,
-          targetHandle: `t-${Math.min(targetEdges.length, 9)}`,
+          sourceHandle: "s-0",
+          targetHandle: "t-0",
           type: "custom",
           data: { label: "" },
         };
@@ -297,14 +295,12 @@ function CanvasContent({
 
       let newEdges = edges;
       if (concept.parentId) {
-        const outIndex = Math.min(edges.filter((e) => e.source === concept.parentId).length, 9);
-        const inIndex = 0;
         const newEdge: Edge = {
           id: `e-${concept.parentId}->${newId}-${Date.now()}`,
           source: concept.parentId,
           target: newId,
-          sourceHandle: `s-${outIndex}`,
-          targetHandle: `t-${inIndex}`,
+          sourceHandle: "s-0",
+          targetHandle: "t-0",
           type: "custom",
           data: { label: concept.edgeLabel || "" },
         };

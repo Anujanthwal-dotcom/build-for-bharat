@@ -37,23 +37,15 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     }
   }));
 
-  const sourceIndex = new Map<string, number>();
-  const targetIndex = new Map<string, number>();
-  const edges = dbProject.edges.map(e => {
-    const outI = sourceIndex.get(e.source) ?? 0;
-    const inI = targetIndex.get(e.target) ?? 0;
-    sourceIndex.set(e.source, outI + 1);
-    targetIndex.set(e.target, inI + 1);
-    return {
-      id: e.edgeId,
-      source: e.source,
-      target: e.target,
-      type: 'custom',
-      sourceHandle: `s-${Math.min(outI, 9)}`,
-      targetHandle: `t-${Math.min(inI, 9)}`,
-      data: { label: e.label }
-    };
-  });
+  const edges = dbProject.edges.map(e => ({
+    id: e.edgeId,
+    source: e.source,
+    target: e.target,
+    type: 'custom',
+    sourceHandle: 's-0',
+    targetHandle: 't-0',
+    data: { label: e.label }
+  }));
 
   const sources = dbProject.sources.map(s => ({
     id: s.id,

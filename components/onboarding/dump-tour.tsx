@@ -10,7 +10,6 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
-import { CartoonMascot, MascotMood } from "./cartoon-mascot";
 import { CurlyArrow } from "./curly-arrow";
 
 interface DumpTourStep {
@@ -20,8 +19,8 @@ interface DumpTourStep {
   title: string;
   description?: string;
   tip?: string;
-  mascotMood: MascotMood;
-  speech: string;
+  mascotMood?: string;
+  speech?: string;
   arrowLabel?: string;
   preferredPlacement: "left" | "right" | "top" | "bottom";
 }
@@ -223,11 +222,18 @@ export function DumpTour({ isOpen, onClose, onTabChange }: DumpTourProps) {
   const targetCenterX = targetRect ? targetRect.left + targetRect.width / 2 : windowWidth / 2;
   const targetCenterY = targetRect ? targetRect.top + targetRect.height / 2 : windowHeight / 2;
 
-  // Mascot positioned atop the card
-  const mascotX = Math.min(windowWidth - 130, Math.max(16, cardX + cardWidth - 120));
-  const mascotY = Math.max(10, cardY - 95);
-  const mascotCenterX = mascotX + 45;
-  const mascotCenterY = mascotY + 45;
+  // Arrow origin from the card edge nearest to the target
+  const arrowStartX = targetCenterX < cardX
+    ? cardX
+    : targetCenterX > cardX + cardWidth
+    ? cardX + cardWidth
+    : Math.min(Math.max(cardX + 30, targetCenterX), cardX + cardWidth - 30);
+
+  const arrowStartY = targetCenterY < cardY
+    ? cardY
+    : targetCenterY > cardY + cardHeight
+    ? cardY + cardHeight
+    : Math.min(Math.max(cardY + 20, targetCenterY), cardY + cardHeight - 20);
 
   const content = (
     <div className="fixed inset-0 z-[100] pointer-events-none font-sans select-none">
@@ -250,30 +256,15 @@ export function DumpTour({ isOpen, onClose, onTabChange }: DumpTourProps) {
         />
       )}
 
-      {/* Curly Arrow pointing from Echo to target */}
+      {/* Curly Arrow pointing from Card to target */}
       {targetRect && (
         <CurlyArrow
-          start={{ x: mascotCenterX, y: mascotCenterY }}
+          start={{ x: arrowStartX, y: arrowStartY }}
           end={{ x: targetCenterX, y: targetCenterY }}
           loop={true}
           label={step.arrowLabel}
         />
       )}
-
-      {/* Floating Echo Mascot */}
-      <div
-        className="absolute pointer-events-auto transition-all duration-300 ease-out z-20"
-        style={{
-          transform: `translate3d(${mascotX}px, ${mascotY}px, 0)`,
-        }}
-      >
-        <CartoonMascot
-          mood={step.mascotMood}
-          placement={step.preferredPlacement}
-          size="sm"
-          speechText={step.speech}
-        />
-      </div>
 
       {/* Floating Instruction Card */}
       <div

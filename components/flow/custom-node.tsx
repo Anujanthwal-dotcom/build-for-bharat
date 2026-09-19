@@ -111,51 +111,47 @@ const CustomNode = ({ id, data, selected }: CustomNodeProps) => {
         </div>
       </div>
 
-      {/* Primary Target Handle (Left center - Drop link here) */}
+      {/* Single Target Handle (Left center - Drop link here) */}
       <Handle
         key="t-0"
         id="t-0"
         type="target"
         position={Position.Left}
         style={{ top: '50%' }}
-        className="!w-3.5 !h-3.5 !-left-[7px] !bg-[#141418] !border-2 !border-white/50 hover:!border-white hover:!scale-125 !rounded-full transition-all cursor-crosshair z-20 shadow-md"
-        title="Drop link here (Target)"
+        className="!w-3 !h-3 !-left-[6px] !bg-[#141418] !border-2 !border-white/50 hover:!border-white hover:!scale-125 !rounded-full transition-all cursor-crosshair z-20 shadow-sm"
+        title="Drop link here"
       />
-
-      {/* Auxiliary Target Handles for multi-edge connections */}
+      {/* Hidden fallback handles for backward compatibility with existing saved graphs */}
       {Array.from({ length: 9 }, (_, i) => (
         <Handle
           key={`t-${i + 1}`}
           id={`t-${i + 1}`}
           type="target"
           position={Position.Left}
-          style={{ top: `${((i + 1) * 100) / 10}%` }}
-          className="!w-2 !h-2 !-left-[4px] !bg-white/30 !border-none !rounded-full hover:!scale-125 transition-all opacity-0 group-hover:opacity-70 cursor-crosshair z-10"
-          title={`Target handle t-${i + 1}`}
+          style={{ top: '50%' }}
+          className="!w-0 !h-0 !opacity-0 !border-none !pointer-events-none"
         />
       ))}
 
-      {/* Primary Source Handle (Right center - Drag from here to link) */}
+      {/* Single Connecting Dot (Right center - Drag to connect) */}
       <Handle
         key="s-0"
         id="s-0"
         type="source"
         position={Position.Right}
         style={{ top: '50%', borderColor: accentColor }}
-        className="!w-3.5 !h-3.5 !-right-[7px] !bg-[#141418] !border-2 hover:!scale-125 !rounded-full transition-all cursor-crosshair z-20 shadow-md group-hover:ring-2 group-hover:ring-accent/40"
-        title="Drag to link to another card (Source)"
+        className="!w-3 !h-3 !-right-[6px] !bg-[#141418] !border-2 hover:!scale-125 !rounded-full transition-all cursor-crosshair z-20 shadow-sm group-hover:ring-2 group-hover:ring-accent/40"
+        title="Drag to link to another node"
       />
-
-      {/* Auxiliary Source Handles for multi-edge connections */}
+      {/* Hidden fallback handles for backward compatibility with existing saved graphs */}
       {Array.from({ length: 9 }, (_, i) => (
         <Handle
           key={`s-${i + 1}`}
           id={`s-${i + 1}`}
           type="source"
           position={Position.Right}
-          style={{ top: `${((i + 1) * 100) / 10}%`, borderColor: accentColor }}
-          className="!w-2 !h-2 !-right-[4px] !bg-accent/40 !border-none !rounded-full hover:!scale-125 transition-all opacity-0 group-hover:opacity-70 cursor-crosshair z-10"
-          title={`Source handle s-${i + 1}`}
+          style={{ top: '50%' }}
+          className="!w-0 !h-0 !opacity-0 !border-none !pointer-events-none"
         />
       ))}
     </div>

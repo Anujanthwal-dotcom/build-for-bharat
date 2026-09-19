@@ -9,9 +9,7 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
-import { CartoonMascot, MascotMood } from "./cartoon-mascot";
 import { CurlyArrow } from "./curly-arrow";
-import { GlassButton } from "@/components/ui/glass-button";
 
 interface CanvasTourStep {
   id: number;
@@ -19,8 +17,8 @@ interface CanvasTourStep {
   title: string;
   description: string;
   tip: string;
-  mascotMood: MascotMood;
-  speech: string;
+  mascotMood?: string;
+  speech?: string;
   arrowLabel?: string;
   preferredPlacement: "right" | "bottom" | "top" | "left";
 }
@@ -186,13 +184,21 @@ export function CanvasFloatingTour({ isOpen: controlledIsOpen, onClose: controll
     }
   }
 
-  // Mascot position
-  const mascotX = Math.min(windowWidth - 140, Math.max(20, cardX + 260));
-  const mascotY = Math.max(10, cardY - 95);
   const targetCenterX = targetRect ? targetRect.left + targetRect.width / 2 : windowWidth / 2;
   const targetCenterY = targetRect ? targetRect.top + targetRect.height / 2 : windowHeight / 2;
-  const mascotCenterX = mascotX + 45;
-  const mascotCenterY = mascotY + 45;
+
+  // Arrow origin from the card edge nearest to the target
+  const arrowStartX = targetCenterX < cardX
+    ? cardX
+    : targetCenterX > cardX + 380
+    ? cardX + 380
+    : Math.min(Math.max(cardX + 40, targetCenterX), cardX + 340);
+
+  const arrowStartY = targetCenterY < cardY
+    ? cardY
+    : targetCenterY > cardY + 220
+    ? cardY + 220
+    : Math.min(Math.max(cardY + 30, targetCenterY), cardY + 180);
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none select-none font-sans overflow-hidden">
@@ -218,27 +224,12 @@ export function CanvasFloatingTour({ isOpen: controlledIsOpen, onClose: controll
       {/* Curly Connecting Arrow */}
       {targetRect && (
         <CurlyArrow
-          start={{ x: mascotCenterX, y: mascotCenterY }}
+          start={{ x: arrowStartX, y: arrowStartY }}
           end={{ x: targetCenterX, y: targetCenterY }}
           loop={true}
           label={step.arrowLabel}
         />
       )}
-
-      {/* Cartoon Mascot Echo */}
-      <div
-        className="absolute pointer-events-auto transition-all duration-500 ease-out z-20"
-        style={{
-          transform: `translate3d(${mascotX}px, ${mascotY}px, 0)`,
-        }}
-      >
-        <CartoonMascot
-          mood={step.mascotMood}
-          placement={step.preferredPlacement}
-          size="sm"
-          speechText={step.speech}
-        />
-      </div>
 
       {/* Instruction Card */}
       <div
