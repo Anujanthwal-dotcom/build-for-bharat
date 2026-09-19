@@ -124,9 +124,9 @@ export default function DumpWindowModal() {
     <Dialog.Root open={isDumpWindowOpen} onOpenChange={(open) => !open && closeDumpWindow()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 data-[state=open]:animate-fade-in" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-2xl bg-[#121214] border border-white/10 shadow-[0_24px_64px_rgba(0,0,0,0.6)] rounded-lg z-50 overflow-hidden flex flex-col max-h-[85vh] data-[state=open]:animate-fade-in-up">
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-2xl h-[540px] max-h-[85vh] bg-[#121214] border border-white/10 shadow-[0_24px_64px_rgba(0,0,0,0.6)] rounded-lg z-50 overflow-hidden flex flex-col data-[state=open]:animate-fade-in-up">
           
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02] flex-shrink-0">
             <div className="flex items-center gap-3">
               <Dialog.Title className="text-lg font-semibold text-white/90">New Knowledge Extraction</Dialog.Title>
               <button
@@ -147,7 +147,7 @@ export default function DumpWindowModal() {
           </div>
 
           <Tabs.Root value={activeTab} onValueChange={(val) => setActiveTab(val as "text" | "links" | "files")} className="flex flex-col flex-1 min-h-0">
-            <div className="px-6 pt-4">
+            <div className="px-6 pt-4 flex-shrink-0">
               <Tabs.List className="flex border-b border-white/10 gap-6">
                 <Tabs.Trigger value="text" data-tour="dump-tab-text" className="pb-3 text-sm font-medium text-muted hover:text-white/80 data-[state=active]:text-accent data-[state=active]:border-b-2 data-[state=active]:border-accent transition-colors flex items-center gap-2 cursor-pointer">
                   <FileText className="w-4 h-4" /> Text / Notes
@@ -161,47 +161,51 @@ export default function DumpWindowModal() {
               </Tabs.List>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 bg-black/20">
-              <Tabs.Content value="text" className="h-full outline-none">
-                <div data-tour="dump-text-input" className="h-full">
+            <div className="flex-1 min-h-0 p-6 bg-black/20 overflow-hidden flex flex-col">
+              <Tabs.Content value="text" className="h-full flex-1 flex flex-col min-h-0 outline-none">
+                <div data-tour="dump-text-input" className="h-full flex-1 flex flex-col min-h-0">
                   <textarea 
                     value={text}
                     onChange={(e) => setText(e.target.value)}
-                    className="w-full h-full min-h-[200px] bg-black/40 border border-white/10 rounded-lg p-4 text-sm text-white/90 font-mono placeholder:text-muted/50 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 resize-none transition-all scrollbar-thin"
+                    className="w-full flex-1 bg-black/40 border border-white/10 rounded-lg p-4 text-sm text-white/90 font-mono placeholder:text-muted/50 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 resize-none transition-all scrollbar-thin"
                     placeholder="Paste your raw documentation, unorganized thoughts, or meeting transcripts here..."
                   />
                 </div>
               </Tabs.Content>
 
-              <Tabs.Content value="links" className="h-full outline-none">
-                <div data-tour="dump-links-input" className="h-full space-y-3">
-                  {links.map((link, i) => (
-                    <div key={i} className="flex gap-2">
-                      <input 
-                        type="url"
-                        value={link}
-                        onChange={(e) => updateLink(i, e.target.value)}
-                        placeholder="https://docs.example.com/..."
-                        className="flex-1 bg-black/40 border border-white/10 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-accent/50 transition-all"
-                      />
-                      {links.length > 1 && (
-                        <button onClick={() => removeLink(i)} className="p-2 text-muted hover:text-red-400 bg-white/5 rounded-md hover:bg-white/10 transition-colors cursor-pointer">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  <button 
-                    onClick={addLink}
-                    className="text-xs font-mono text-accent hover:text-accent/80 transition-colors mt-2 cursor-pointer"
-                  >
-                    + Add another URL
-                  </button>
+              <Tabs.Content value="links" className="h-full flex-1 flex flex-col min-h-0 outline-none">
+                <div data-tour="dump-links-input" className="h-full flex-1 flex flex-col min-h-0">
+                  <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+                    {links.map((link, i) => (
+                      <div key={i} className="flex gap-2">
+                        <input 
+                          type="url"
+                          value={link}
+                          onChange={(e) => updateLink(i, e.target.value)}
+                          placeholder="https://docs.example.com/..."
+                          className="flex-1 bg-black/40 border border-white/10 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-accent/50 transition-all"
+                        />
+                        {links.length > 1 && (
+                          <button onClick={() => removeLink(i)} className="p-2 text-muted hover:text-red-400 bg-white/5 rounded-md hover:bg-white/10 transition-colors cursor-pointer">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pt-3 flex-shrink-0">
+                    <button 
+                      onClick={addLink}
+                      className="text-xs font-mono text-accent hover:text-accent/80 transition-colors cursor-pointer"
+                    >
+                      + Add another URL
+                    </button>
+                  </div>
                 </div>
               </Tabs.Content>
 
-              <Tabs.Content value="files" className="h-full outline-none">
-                <div data-tour="dump-files-input" className="h-full flex flex-col">
+              <Tabs.Content value="files" className="h-full flex-1 flex flex-col min-h-0 outline-none">
+                <div data-tour="dump-files-input" className="h-full flex-1 flex flex-col min-h-0">
                   <input 
                     type="file" 
                     ref={fileInputRef} 
@@ -214,7 +218,7 @@ export default function DumpWindowModal() {
                   {files.length === 0 ? (
                     <div 
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex-1 min-h-[200px] border-2 border-dashed border-white/10 rounded-lg flex flex-col items-center justify-center gap-4 bg-white/[0.01] hover:bg-white/[0.03] transition-colors border-accent/20 cursor-pointer"
+                      className="flex-1 border-2 border-dashed border-white/10 rounded-lg flex flex-col items-center justify-center gap-4 bg-white/[0.01] hover:bg-white/[0.03] transition-colors border-accent/20 cursor-pointer"
                     >
                       <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
                         <Upload className="w-5 h-5 text-accent/70" />
@@ -225,12 +229,12 @@ export default function DumpWindowModal() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex-1">
-                      <div className="flex justify-between items-center mb-3">
+                    <div className="flex-1 flex flex-col min-h-0">
+                      <div className="flex justify-between items-center mb-3 flex-shrink-0">
                         <h4 className="text-sm font-medium text-white/90">Selected Files</h4>
-                        <button onClick={() => fileInputRef.current?.click()} className="text-xs text-accent cursor-pointer">Add more</button>
+                        <button onClick={() => fileInputRef.current?.click()} className="text-xs text-accent cursor-pointer hover:underline">Add more</button>
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2 overflow-y-auto flex-1 pr-1">
                         {files.map((file, i) => (
                           <div key={i} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-md">
                             <span className="text-sm text-white/90 font-mono truncate">{file.name}</span>
@@ -247,7 +251,7 @@ export default function DumpWindowModal() {
             </div>
           </Tabs.Root>
 
-          <div className="px-6 py-4 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
+          <div className="px-6 py-4 border-t border-white/5 bg-white/[0.02] flex items-center justify-between flex-shrink-0">
             <div data-tour="dump-depth-slider" className="flex-1 max-w-[200px]">
               <div className="flex justify-between mb-2">
                 <span className="text-[10px] font-mono text-muted uppercase tracking-wider">Depth</span>

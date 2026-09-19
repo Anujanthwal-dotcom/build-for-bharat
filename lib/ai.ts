@@ -70,7 +70,7 @@ export async function extractMindMap(
 
   try {
     const model = new ChatGoogle({
-      model: "gemini-3.6-flash",
+      model: "gemini-3.8-flash",
       temperature: 0,
       apiKey,
     });
