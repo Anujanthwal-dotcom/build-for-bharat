@@ -3,6 +3,7 @@ import { ArrowRight, BrainCircuit } from 'lucide-react';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { SignInButton } from '@/components/auth/sign-in-button';
+import { GuestButton } from '@/components/auth/guest-button';
 
 export default async function LandingPage() {
   const session = await getServerSession(authOptions);
@@ -34,11 +35,11 @@ export default async function LandingPage() {
             Instantly process PDFs, links, and notes into strictly structured, aesthetic mental models. Built for the modern technical creator.
           </p>
           
-          <div className="pt-4 flex flex-col items-center gap-4">
+          <div className="pt-4 flex flex-col items-center gap-3 w-full max-w-xs mx-auto">
             {session?.user ? (
               <Link 
                 href="/dashboard"
-                className="group relative inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 transition-all text-white font-medium px-6 py-3 rounded-md overflow-hidden"
+                className="group relative w-full inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 transition-all text-white font-medium px-6 py-3 rounded-md overflow-hidden"
               >
                 <div className="absolute inset-0 bg-accent/10 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300 ease-out" />
                 <span className="relative flex items-center gap-2">
@@ -47,10 +48,20 @@ export default async function LandingPage() {
                 </span>
               </Link>
             ) : (
-              <SignInButton className="w-full max-w-xs" />
+              <>
+                <GuestButton className="w-full" />
+                <div className="flex items-center gap-3 w-full my-1">
+                  <div className="h-px flex-1 bg-white/10" />
+                  <span className="text-[11px] font-mono text-muted uppercase">or</span>
+                  <div className="h-px flex-1 bg-white/10" />
+                </div>
+                <SignInButton className="w-full" />
+              </>
             )}
-            <p className="text-muted text-xs font-mono">
-              {session?.user ? 'Welcome back — your mindmaps are synced.' : 'Sign in with Google to save your mindmaps.'}
+            <p className="text-muted text-xs font-mono text-center">
+              {session?.user 
+                ? 'Welcome back — your mindmaps are synced.' 
+                : 'Guest mode creates a temporary session. No login required.'}
             </p>
           </div>
         </div>
