@@ -4,7 +4,7 @@ import { getSessionUserId } from '@/lib/auth';
 import { extractMindMap, getDepthNodeLimit, type ExtractedGraph } from '@/lib/ai';
 import type { DepthLevel, Source } from '@/lib/types';
 import z from 'zod';
-import dagre from '@dagrejs/dagre';
+import { calculateDagreLayout } from '@/lib/layout';
 
 const RequestSchema = z.object({
   depth: z.enum(["summary", "standard", "deep"]).optional(),
@@ -74,38 +74,28 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       data: { name: graphData.title },
     });
 
-    // Run Dagre for layout
-    const g = new dagre.graphlib.Graph();
-    g.setGraph({ rankdir: 'LR', align: 'UL', ranksep: 100, nodesep: 50 });
-    g.setDefaultEdgeLabel(() => ({}));
-
-    graphData.nodes.forEach((node) => {
-      g.setNode(node.id, { width: 250, height: 120 });
-    });
-
-    graphData.edges.forEach((edge) => {
-      if (g.hasNode(edge.source) && g.hasNode(edge.target)) g.setEdge(edge.source, edge.target);
-    });
-
-    dagre.layout(g);
+    // Run layout with guaranteed clearance and collision avoidance
+    const { nodes: laidOutNodes, edges: validEdges } = calculateDagreLayout(
+      graphData.nodes,
+      graphData.edges,
+      'LR',
+    );
 
     // Prepare nodes with coordinates
-    const nodesToSave = graphData.nodes.map((n) => {
-      const layoutNode = g.node(n.id);
-      return {
-        nodeId: n.id,
-        label: n.label,
-        summary: n.summary,
-        category: n.category,
-        tags: n.tags ?? [],
-        x: layoutNode.x - 125, // center offset
-        y: layoutNode.y - 60,
-        projectId: id,
-      };
-    });
+    const nodesToSave = laidOutNodes.map((n) => ({
+      nodeId: n.id,
+      label: n.label,
+      summary: n.summary,
+      category: n.category,
+      tags: n.tags ?? [],
+      x: n.x,
+      y: n.y,
+      projectId: id,
+    }));
 
-    const edgesToSave = graphData.edges
-      .filter((e) => g.hasNode(e.source) && g.hasNode(e.target))
+    const validNodeIdSet = new Set(laidOutNodes.map((n) => n.id));
+    const edgesToSave = validEdges
+      .filter((e) => validNodeIdSet.has(e.source) && validNodeIdSet.has(e.target))
       .map((e, i) => ({
         edgeId: `e${i}-${e.source}-${e.target}`,
         source: e.source,

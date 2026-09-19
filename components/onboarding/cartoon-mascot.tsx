@@ -5,29 +5,33 @@ import { Sparkles, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type MascotMood = "waving" | "pointing" | "thinking" | "celebrating" | "idle";
+export type TourPlacement = "left" | "right" | "top" | "bottom";
 
 interface CartoonMascotProps {
   mood?: MascotMood;
+  placement?: TourPlacement;
   speechText?: string;
   className?: string;
   size?: "sm" | "md" | "lg";
 }
 
 /**
- * CartoonMascot: "Leo", the cute cartoon boy guide for MindFlow.
- * Features fluffy hair, expressive anime eyes, blush cheeks,
- * multiple smiles and distinct bodily positions.
+ * CartoonMascot: "Echo", the cute cartoon dolphin guide for MindFlow.
+ * Styled after the classic playful cartoon dolphin vector icon with clean outlines,
+ * white underbelly, expressive anime eyes, and context-aware gestures that adapt
+ * to tour positions and user actions.
  */
 export function CartoonMascot({
   mood = "waving",
+  placement = "right",
   speechText,
   className,
   size = "md",
 }: CartoonMascotProps) {
   const sizeMap = {
-    sm: "w-28 h-32",
-    md: "w-36 h-40",
-    lg: "w-48 h-52",
+    sm: "w-32 h-32",
+    md: "w-40 h-40",
+    lg: "w-52 h-52",
   };
 
   return (
@@ -36,9 +40,9 @@ export function CartoonMascot({
       {speechText && (
         <div className="relative mb-2 max-w-[280px] animate-fade-in-up">
           <div className="relative rounded-2xl border border-white/10 bg-[#121214] px-3.5 py-2 text-xs font-medium text-zinc-100 shadow-[0_12px_32px_rgba(0,0,0,0.7)] backdrop-blur-xl">
-            <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-accent">
-              <Sparkles className="h-3 w-3 text-accent" />
-              <span>Leo • Creator Guide</span>
+            <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-sky-400">
+              <Sparkles className="h-3 w-3 text-sky-400" />
+              <span>Echo • Dolphin Guide</span>
             </div>
             <p className="mt-1 leading-relaxed text-zinc-300 text-[11px]">{speechText}</p>
           </div>
@@ -47,410 +51,439 @@ export function CartoonMascot({
         </div>
       )}
 
-      {/* Mascot Body & Ambient Glow */}
+      {/* Mascot Body & Ambient Halo */}
       <div className={cn("relative flex items-center justify-center animate-mascot-bob", sizeMap[size])}>
-        {/* Soft Ambient Halo behind the boy */}
+        {/* Soft Ambient Halo behind Echo */}
         <div
           className={cn(
-            "absolute inset-0 rounded-full blur-xl transition-all duration-700 opacity-40",
-            mood === "celebrating" && "bg-white/[0.08] scale-125",
-            mood === "thinking" && "bg-white/[0.06] scale-110",
-            mood === "pointing" && "bg-white/[0.06] scale-115",
-            (mood === "waving" || mood === "idle") && "bg-white/[0.05]",
+            "absolute inset-0 rounded-full blur-2xl transition-all duration-700 pointer-events-none",
+            mood === "celebrating" && "bg-sky-400/25 scale-125",
+            mood === "thinking" && "bg-indigo-400/20 scale-115",
+            mood === "pointing" && "bg-cyan-400/20 scale-120",
+            (mood === "waving" || mood === "idle") && "bg-blue-500/15 scale-110",
           )}
         />
 
-        {/* The SVG Cartoon Boy Artwork */}
+        {/* SVG Cartoon Dolphin Artwork */}
         <svg
-          viewBox="0 0 160 180"
+          viewBox="0 0 160 165"
           className="relative z-10 w-full h-full drop-shadow-[0_12px_24px_rgba(0,0,0,0.6)] overflow-visible"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Floating Sparkles for Celebrating Mode */}
-          {mood === "celebrating" && (
-            <g className="animate-pulse">
-              <polygon points="25,20 28,26 34,28 28,30 25,36 22,30 16,28 22,26" fill="#fbbf24" />
-              <polygon points="135,25 138,30 143,32 138,34 135,39 132,34 127,32 132,30" fill="#38bdf8" />
-              <circle cx="28" cy="48" r="2.5" fill="#f43f5e" />
-              <circle cx="132" cy="55" r="2.5" fill="#34d399" />
+          {/* 1. FLOATING MOOD ACCESSORIES */}
+          
+          {/* A. Waving: Floating Heart Speech Bubble (Exact reference match!) */}
+          {mood === "waving" && (
+            <g className="animate-bounce origin-[126px_24px]">
+              <circle cx="126" cy="24" r="11.5" fill="#ffffff" stroke="#172554" strokeWidth="2.2" />
+              <path d="M 118 31 L 120 36 L 125 33" fill="#ffffff" stroke="#172554" strokeWidth="2.2" strokeLinejoin="round" />
+              {/* Heart inside */}
+              <path
+                d="M 126 28 C 126 28, 122 25, 122 22.5 C 122 20.5, 123.5 19, 125.5 19 C 126.5 19, 127.5 19.8, 128 20.5 C 128.5 19.8, 129.5 19, 130.5 19 C 132.5 19, 134 20.5, 134 22.5 C 134 25, 130 28, 126 28 Z"
+                fill="#f43f5e"
+              />
             </g>
           )}
 
-          {/* Thinking lightbulb/idea spark */}
+          {/* B. Thinking: Floating Thought Bubble with Glowing Idea Star */}
           {mood === "thinking" && (
-            <g className="animate-bounce origin-[125px_30px]">
-              <circle cx="125" cy="30" r="9" fill="#fef08a" opacity="0.9" />
-              <polygon points="125,23 127,28 132,30 127,32 125,37 123,32 118,30 123,28" fill="#f59e0b" />
+            <g>
+              <circle cx="118" cy="42" r="3" fill="#ffffff" stroke="#172554" strokeWidth="1.8" />
+              <circle cx="124" cy="33" r="4.5" fill="#ffffff" stroke="#172554" strokeWidth="2" />
+              <g className="animate-bounce origin-[132px_18px]">
+                <circle cx="132" cy="18" r="11" fill="#18181b" stroke="#38bdf8" strokeWidth="2" />
+                <polygon
+                  points="132,10 134,14 139,16 135,19 136,24 132,21 128,24 129,19 125,16 130,14"
+                  fill="#fbbf24"
+                />
+                <circle cx="132" cy="17" r="3" fill="#ffffff" />
+              </g>
             </g>
           )}
 
-          {/* 1. Body & Clothes (Hoodie) */}
-          <g id="body-and-clothes">
-            {/* Torso Hoodie */}
+          {/* C. Celebrating: Celebratory Stars, Confetti & Water Splashes */}
+          {mood === "celebrating" && (
+            <g>
+              <polygon
+                points="128,14 130,19 135,20 131,23 132,28 128,25 124,28 125,23 121,20 126,19"
+                fill="#fbbf24"
+                className="animate-pulse"
+              />
+              <polygon
+                points="36,24 38,28 42,29 39,32 40,36 36,34 32,36 33,32 30,29 34,28"
+                fill="#fbbf24"
+              />
+              <circle cx="48" cy="18" r="2.5" fill="#f43f5e" />
+              <circle cx="116" cy="16" r="2.2" fill="#34d399" />
+              <circle cx="138" cy="38" r="2.5" fill="#38bdf8" />
+            </g>
+          )}
+
+          {/* D. Idle: Soft floating water bubbles */}
+          {mood === "idle" && (
+            <g className="animate-pulse">
+              <circle cx="120" cy="40" r="2" fill="#bae6fd" opacity="0.6" />
+              <circle cx="126" cy="30" r="3" fill="#bae6fd" opacity="0.5" />
+            </g>
+          )}
+
+          {/* 2. DORSAL FIN & TAIL FLUKES (Behind main body) */}
+          <g id="dolphin-fins-back">
+            {/* Dorsal Fin (Upper left back) */}
             <path
-              d="M48 116 C 44 122, 42 145, 42 165 C 42 168, 118 168, 118 165 C 118 145, 116 122, 112 116 Z"
-              fill="url(#hoodie-grad)"
-              stroke="rgba(255,255,255,0.15)"
-              strokeWidth="1.5"
+              d="M 50 48 C 42 36, 28 36, 22 44 C 20 48, 26 54, 40 64"
+              fill="#50a2f5"
+              stroke="#172554"
+              strokeWidth="2.8"
+              strokeLinejoin="round"
+              strokeLinecap="round"
             />
 
-            {/* Hoodie Pocket Kangaroo Pouch */}
-            <path
-              d="M58 142 C 58 138, 102 138, 102 142 L 96 160 C 96 162, 64 162, 64 160 Z"
-              fill="#18181b"
-              stroke="rgba(255,255,255,0.1)"
-              strokeWidth="1.2"
-            />
+            {/* Tail Flukes (Caudal Fin) */}
+            <g
+              className={cn(
+                mood === "celebrating" && "animate-bot-celebrate origin-[83px_132px]",
+              )}
+            >
+              {/* Left fluke lobe */}
+              <path
+                d="M 83 132 C 78 126, 68 128, 64 136 C 60 144, 68 152, 78 144 C 81 141, 83 136, 83 132 Z"
+                fill="#50a2f5"
+                stroke="#172554"
+                strokeWidth="2.8"
+                strokeLinejoin="round"
+              />
+              {/* Right fluke lobe */}
+              <path
+                d="M 83 132 C 86 124, 98 122, 104 128 C 108 134, 102 144, 92 142 C 87 140, 84 136, 83 132 Z"
+                fill="#50a2f5"
+                stroke="#172554"
+                strokeWidth="2.8"
+                strokeLinejoin="round"
+              />
+            </g>
 
-            {/* Hoodie Strings with Accent Beads */}
-            <line x1="72" y1="118" x2="70" y2="134" stroke="#E2E0D9" strokeWidth="1.8" strokeLinecap="round" />
-            <circle cx="70" cy="134" r="2" fill="#E2E0D9" />
-            <line x1="88" y1="118" x2="90" y2="134" stroke="#E2E0D9" strokeWidth="1.8" strokeLinecap="round" />
-            <circle cx="90" cy="134" r="2" fill="#E2E0D9" />
-
-            {/* Tech Logo / Badge on chest */}
-            <circle cx="80" cy="128" r="6" fill="#18181b" stroke="#E2E0D9" strokeWidth="1" />
-            <path d="M78 126 L 82 128 L 78 130" stroke="#E2E0D9" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-
-            {/* Hoodie Collar / Neckline */}
-            <path
-              d="M62 112 C 70 122, 90 122, 98 112 C 92 118, 68 118, 62 112 Z"
-              fill="#27272a"
-            />
+            {/* Left Pectoral Flipper (Far side) */}
+            {mood === "celebrating" ? (
+              // Left flipper raised high in celebratory triumph!
+              <g className="animate-bot-celebrate origin-[50px_60px]">
+                <path
+                  d="M 52 64 C 44 52, 34 38, 26 32 C 22 29, 20 34, 24 40 C 32 52, 44 64, 50 68 Z"
+                  fill="#50a2f5"
+                  stroke="#172554"
+                  strokeWidth="2.8"
+                  strokeLinejoin="round"
+                />
+              </g>
+            ) : (
+              // Natural swimming position on left flank
+              <path
+                d="M 42 74 C 34 74, 24 80, 22 88 C 20 92, 26 94, 36 92 C 46 90, 50 84, 52 78 Z"
+                fill="#50a2f5"
+                stroke="#172554"
+                strokeWidth="2.8"
+                strokeLinejoin="round"
+              />
+            )}
           </g>
 
-          {/* 2. Arms & Hands with distinct positions based on mood */}
-          <g id="arms-and-hands">
-            {/* A. Waving Pose */}
-            {mood === "waving" && (
-              <>
-                {/* Left arm resting naturally */}
-                <path
-                  d="M45 118 C 36 128, 34 145, 42 152 C 45 150, 48 142, 49 135 Z"
-                  fill="url(#arm-grad)"
-                />
-                <circle cx="43" cy="154" r="6" fill="#fed7aa" />
+          {/* 3. MAIN DOLPHIN BODY & WHITE UNDERBELLY */}
+          <g id="dolphin-body">
+            {/* Main Blue Leaping Arch Silhouette */}
+            <path
+              d="M 52 38 C 66 24, 92 24, 104 36 C 112 43, 118 47, 120 52 C 122 56, 118 59, 110 61 C 102 62, 97 66, 94 72 C 88 92, 80 114, 83 134 C 74 122, 62 100, 54 78 C 48 62, 46 48, 52 38 Z"
+              fill="#50a2f5"
+              stroke="#172554"
+              strokeWidth="2.8"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
 
-                {/* Right arm waving in the air */}
-                <g className="animate-bot-wave origin-[114px_120px]">
+            {/* Forehead Soft Highlight Sheen */}
+            <path
+              d="M 64 34 C 74 29, 86 29, 94 33"
+              stroke="#ffffff"
+              strokeWidth="3.2"
+              strokeLinecap="round"
+              opacity="0.7"
+            />
+
+            {/* Crisp White Underbelly Patch (Exact match to reference image!) */}
+            <path
+              d="M 98 62 C 88 64, 76 72, 62 82 C 68 100, 75 118, 83 134 C 80 114, 86 94, 92 76 C 94 71, 98 66, 98 62 Z"
+              fill="#ffffff"
+              stroke="#172554"
+              strokeWidth="2.8"
+              strokeLinejoin="round"
+            />
+
+            {/* Beak & Mouth */}
+            <g>
+              {/* Upper beak outline contour */}
+              <path
+                d="M 104 36 C 112 43, 118 47, 120 52 C 122 56, 118 59, 110 61"
+                stroke="#172554"
+                strokeWidth="2.8"
+                strokeLinecap="round"
+              />
+
+              {/* Mouth open wedge / grin */}
+              {mood === "celebrating" ? (
+                // Wide open ecstatic grin
+                <>
                   <path
-                    d="M112 118 C 124 110, 136 88, 134 76 C 130 74, 122 84, 114 102 Z"
-                    fill="url(#arm-grad)"
+                    d="M 98 56 C 96 56, 95 60, 96 63 C 98 70, 108 74, 114 70 C 116 68, 116 63, 111 60 Z"
+                    fill="#172554"
+                    stroke="#172554"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
                   />
-                  {/* Waving Hand with cute cartoon fingers */}
-                  <circle cx="134" cy="72" r="8" fill="#fed7aa" />
-                  <ellipse cx="136" cy="65" rx="2.5" ry="4" fill="#fed7aa" />
-                  <ellipse cx="139" cy="67" rx="2.5" ry="4" fill="#fed7aa" />
-                  <ellipse cx="142" cy="72" rx="2.5" ry="3.5" fill="#fed7aa" />
-                </g>
+                  <path d="M 102 66 C 106 63, 110 64, 112 68 C 109 71, 105 70, 102 66 Z" fill="#f43f5e" />
+                </>
+              ) : mood === "thinking" ? (
+                // Pondering gentle smile
+                <path
+                  d="M 98 59 Q 104 62 108 58"
+                  stroke="#172554"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                />
+              ) : (
+                // Classic happy wedge smile from reference image
+                <>
+                  <path
+                    d="M 101 56 C 98 56, 96 58, 97 61 C 98 65, 104 70, 110 68 C 112 67, 114 64, 111 61 C 107 58, 103 56, 101 56 Z"
+                    fill="#172554"
+                    stroke="#172554"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M 102 65 C 105 63, 108 63, 109 66 C 107 68, 104 68, 102 65 Z"
+                    fill="#f87171"
+                  />
+                </>
+              )}
+            </g>
+          </g>
+
+          {/* 4. EXPRESSIVE EYES */}
+          <g id="dolphin-eyes">
+            {mood === "celebrating" ? (
+              // Joyful crescent squint eyes (^ ^)
+              <>
+                <path
+                  d="M 74 44 Q 78 37 83 43"
+                  stroke="#172554"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                <path
+                  d="M 93 47 Q 99 38 104 46"
+                  stroke="#172554"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  fill="none"
+                />
               </>
+            ) : mood === "thinking" ? (
+              // Inquisitive upward gaze towards thought bubble
+              <>
+                <ellipse cx="78" cy="42" rx="3.5" ry="5.5" transform="rotate(-15 78 42)" fill="#172554" />
+                <circle cx="79" cy="39" r="1.6" fill="#ffffff" />
+
+                <ellipse cx="98" cy="45" rx="4.5" ry="7" transform="rotate(10 98 45)" fill="#172554" />
+                <circle cx="99" cy="41" r="2.2" fill="#ffffff" />
+                {/* Raised curious brow */}
+                <path d="M 93 34 Q 99 28 106 33" stroke="#172554" strokeWidth="2.4" strokeLinecap="round" />
+              </>
+            ) : mood === "pointing" ? (
+              // Focused gaze directed towards target
+              <>
+                <ellipse cx="78" cy="42" rx="3.5" ry="5.5" transform="rotate(-15 78 42)" fill="#172554" />
+                <circle
+                  cx={placement === "bottom" ? "79" : "80"}
+                  cy={placement === "bottom" ? "42" : "41"}
+                  r="1.6"
+                  fill="#ffffff"
+                />
+
+                <ellipse cx="98" cy="45" rx="4.5" ry="7" transform="rotate(10 98 45)" fill="#172554" />
+                <circle
+                  cx={placement === "bottom" ? "99" : "101"}
+                  cy={placement === "bottom" ? "46" : "43.5"}
+                  r="2.2"
+                  fill="#ffffff"
+                />
+                <path d="M 94 36 Q 100 32 105 35" stroke="#172554" strokeWidth="2.2" strokeLinecap="round" />
+              </>
+            ) : (
+              // Classic wide sparkling anime eyes with blinking animation
+              <g className="animate-bot-blink origin-[88px_44px]">
+                {/* Left eye (secondary on forehead) */}
+                <ellipse cx="78" cy="42" rx="3.5" ry="5.5" transform="rotate(-15 78 42)" fill="#172554" />
+                <circle cx="79" cy="40.5" r="1.6" fill="#ffffff" />
+
+                {/* Right eye (main eye) */}
+                <ellipse cx="98" cy="45" rx="4.5" ry="7" transform="rotate(10 98 45)" fill="#172554" />
+                <circle cx="99.5" cy="43" r="2.2" fill="#ffffff" />
+                <circle cx="96.5" cy="47" r="1.1" fill="#ffffff" />
+
+                {/* Brow crease */}
+                <path d="M 94 36 Q 99 33 104 36" stroke="#172554" strokeWidth="2.2" strokeLinecap="round" />
+              </g>
+            )}
+          </g>
+
+          {/* 5. FRONT PECTORAL FLIPPER (GESTURES ACCORDING TO TOUR POSITION & MOOD) */}
+          <g id="dolphin-flipper-front">
+            {/* A. Waving Pose: Raised high and waving (Exact reference match!) */}
+            {mood === "waving" && (
+              <g className="animate-bot-wave origin-[90px_76px]">
+                <path
+                  d="M 88 74 C 94 72, 110 64, 120 54 C 124 50, 129 55, 126 61 C 118 72, 102 82, 88 82 Z"
+                  fill="#50a2f5"
+                  stroke="#172554"
+                  strokeWidth="2.8"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M 98 72 C 108 65, 116 58, 120 56"
+                  stroke="#ffffff"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  opacity="0.6"
+                />
+              </g>
             )}
 
-            {/* B. Pointing Pose */}
+            {/* B. Pointing Pose: Directed according to tour position */}
             {mood === "pointing" && (
               <>
-                {/* Left hand tucked in hoodie pocket */}
-                <path
-                  d="M46 118 C 38 126, 42 144, 58 145 Z"
-                  fill="url(#arm-grad)"
-                />
-                <circle cx="58" cy="144" r="5" fill="#fed7aa" />
-
-                {/* Right arm dynamically pointing towards target/card */}
-                <g className="animate-bot-point origin-[112px_120px]">
-                  <path
-                    d="M112 118 C 125 116, 142 112, 150 110 C 148 105, 138 108, 115 110 Z"
-                    fill="url(#arm-grad)"
-                  />
-                  {/* Pointing hand with extended index finger */}
-                  <circle cx="150" cy="110" r="6" fill="#fed7aa" />
-                  <line x1="150" y1="110" x2="162" y2="108" stroke="#fed7aa" strokeWidth="4" strokeLinecap="round" />
-                  {/* Energy spark at fingertip */}
-                  <circle cx="163" cy="108" r="3" fill="#38bdf8" className="animate-ping" />
-                </g>
+                {placement === "bottom" ? (
+                  // Pointing DOWN towards tour card/button below
+                  <g className="animate-bot-point-down origin-[88px_74px]">
+                    <path
+                      d="M 88 74 C 94 76, 106 90, 112 108 C 114 113, 108 116, 104 112 C 98 102, 92 88, 86 80 Z"
+                      fill="#50a2f5"
+                      stroke="#172554"
+                      strokeWidth="2.8"
+                      strokeLinejoin="round"
+                    />
+                    {/* Energy ripple at tip */}
+                    <circle cx="112" cy="116" r="3.5" fill="#38bdf8" className="animate-ping" />
+                    <circle cx="112" cy="116" r="2" fill="#ffffff" />
+                    {/* Downward direction chevron */}
+                    <path
+                      d="M 108 120 L 112 124 L 116 120"
+                      stroke="#38bdf8"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </g>
+                ) : placement === "top" ? (
+                  // Pointing UP towards element above
+                  <g className="animate-bot-point origin-[88px_74px]">
+                    <path
+                      d="M 88 74 C 94 68, 108 50, 116 36 C 120 31, 124 35, 121 41 C 113 54, 100 70, 88 78 Z"
+                      fill="#50a2f5"
+                      stroke="#172554"
+                      strokeWidth="2.8"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="118" cy="34" r="3.5" fill="#38bdf8" className="animate-ping" />
+                    <circle cx="118" cy="34" r="2" fill="#ffffff" />
+                    <path
+                      d="M 114 30 L 118 26 L 122 30"
+                      stroke="#38bdf8"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </g>
+                ) : placement === "left" ? (
+                  // Pointing LEFT across towards element
+                  <g className="animate-bot-point origin-[88px_74px]">
+                    <path
+                      d="M 88 74 C 76 74, 58 76, 42 78 C 36 79, 36 73, 42 71 C 56 67, 74 69, 86 72 Z"
+                      fill="#50a2f5"
+                      stroke="#172554"
+                      strokeWidth="2.8"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="38" cy="74" r="3.5" fill="#38bdf8" className="animate-ping" />
+                    <circle cx="38" cy="74" r="2" fill="#ffffff" />
+                  </g>
+                ) : (
+                  // Pointing RIGHT towards tour card/button to the right
+                  <g className="animate-bot-point origin-[88px_74px]">
+                    <path
+                      d="M 88 74 C 98 72, 120 70, 136 68 C 142 67, 143 73, 137 76 C 122 81, 104 83, 88 80 Z"
+                      fill="#50a2f5"
+                      stroke="#172554"
+                      strokeWidth="2.8"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="144" cy="71" r="3.5" fill="#38bdf8" className="animate-ping" />
+                    <circle cx="144" cy="71" r="2" fill="#ffffff" />
+                    <path
+                      d="M 148 67 L 152 71 L 148 75"
+                      stroke="#38bdf8"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </g>
+                )}
               </>
             )}
 
-            {/* C. Thinking Pose */}
+            {/* C. Thinking Pose: Flipper touching under chin/beak */}
             {mood === "thinking" && (
-              <>
-                {/* Right hand on hip */}
+              <g>
                 <path
-                  d="M112 118 C 122 126, 120 142, 106 146 Z"
-                  fill="url(#arm-grad)"
+                  d="M 88 76 C 90 68, 96 60, 104 58 C 108 57, 110 63, 104 66 C 98 70, 94 76, 88 80 Z"
+                  fill="#50a2f5"
+                  stroke="#172554"
+                  strokeWidth="2.8"
+                  strokeLinejoin="round"
                 />
-                <circle cx="106" cy="146" r="6" fill="#fed7aa" />
-
-                {/* Left arm bent upwards touching chin */}
-                <g>
-                  <path
-                    d="M48 118 C 36 122, 38 105, 56 96 C 58 102, 54 114, 52 118 Z"
-                    fill="url(#arm-grad)"
-                  />
-                  {/* Hand on cheek/chin */}
-                  <circle cx="58" cy="95" r="7" fill="#fed7aa" />
-                  <ellipse cx="62" cy="92" rx="2.5" ry="3.5" fill="#fed7aa" />
-                </g>
-              </>
+                <ellipse cx="103" cy="61" rx="2.5" ry="3" fill="#ffffff" opacity="0.6" />
+              </g>
             )}
 
-            {/* D. Celebrating Pose (Both arms raised high in victory) */}
+            {/* D. Celebrating Pose: Right flipper raised high in victory! */}
             {mood === "celebrating" && (
-              <>
-                {/* Left arm raised */}
-                <g className="animate-bot-celebrate origin-[48px_120px]">
-                  <path
-                    d="M48 118 C 36 108, 26 84, 28 72 C 34 72, 40 86, 50 106 Z"
-                    fill="url(#arm-grad)"
-                  />
-                  <circle cx="27" cy="69" r="8" fill="#fed7aa" />
-                  <ellipse cx="25" cy="63" rx="2.5" ry="4" fill="#fed7aa" />
-                </g>
-
-                {/* Right arm raised */}
-                <g className="animate-bot-celebrate origin-[112px_120px]">
-                  <path
-                    d="M112 118 C 124 108, 134 84, 132 72 C 126 72, 120 86, 110 106 Z"
-                    fill="url(#arm-grad)"
-                  />
-                  <circle cx="133" cy="69" r="8" fill="#fed7aa" />
-                  <ellipse cx="135" cy="63" rx="2.5" ry="4" fill="#fed7aa" />
-                </g>
-              </>
+              <g className="animate-bot-celebrate origin-[90px_74px]">
+                <path
+                  d="M 88 72 C 96 58, 110 42, 118 36 C 122 33, 126 38, 122 44 C 114 56, 100 70, 90 78 Z"
+                  fill="#50a2f5"
+                  stroke="#172554"
+                  strokeWidth="2.8"
+                  strokeLinejoin="round"
+                />
+              </g>
             )}
 
-            {/* E. Idle Pose */}
+            {/* E. Idle Pose: Relaxed swimming rest along flank */}
             {mood === "idle" && (
-              <>
-                <path d="M46 118 C 36 126, 36 146, 44 152 Z" fill="url(#arm-grad)" />
-                <circle cx="44" cy="154" r="6" fill="#fed7aa" />
-                <path d="M114 118 C 124 126, 124 146, 116 152 Z" fill="url(#arm-grad)" />
-                <circle cx="116" cy="154" r="6" fill="#fed7aa" />
-              </>
-            )}
-          </g>
-
-          {/* 3. Head & Cute Cartoon Face */}
-          <g id="head-and-face">
-            {/* Neck */}
-            <rect x="73" y="104" width="14" height="12" rx="4" fill="#fed7aa" />
-
-            {/* Ears */}
-            <ellipse cx="48" cy="80" rx="6" ry="8" fill="#fed7aa" />
-            <ellipse cx="48" cy="80" rx="3.5" ry="5" fill="#fbcfe8" opacity="0.6" />
-            <ellipse cx="112" cy="80" rx="6" ry="8" fill="#fed7aa" />
-            <ellipse cx="112" cy="80" rx="3.5" ry="5" fill="#fbcfe8" opacity="0.6" />
-
-            {/* Main Face Contour */}
-            <rect
-              x="50"
-              y="48"
-              width="60"
-              height="62"
-              rx="24"
-              fill="url(#skin-grad)"
-            />
-
-            {/* Soft Rosy Blushing Cheeks */}
-            <ellipse cx="58" cy="84" rx="6" ry="3.5" fill="#f43f5e" opacity="0.35" />
-            <ellipse cx="102" cy="84" rx="6" ry="3.5" fill="#f43f5e" opacity="0.35" />
-
-            {/* Small Cute Nose */}
-            <path
-              d="M79 81 C 80 83, 82 83, 83 81"
-              stroke="#ea580c"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              fill="none"
-            />
-
-            {/* Eyebrows based on mood */}
-            {mood === "thinking" ? (
-              <>
-                <path d="M58 64 Q 65 60 72 63" stroke="#451a03" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-                {/* One eyebrow raised higher! */}
-                <path d="M88 60 Q 95 56 102 62" stroke="#451a03" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-              </>
-            ) : mood === "pointing" ? (
-              <>
-                {/* Determined, confident curved brows */}
-                <path d="M58 65 Q 66 61 73 65" stroke="#451a03" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-                <path d="M87 64 Q 94 60 102 64" stroke="#451a03" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-              </>
-            ) : (
-              <>
-                <path d="M58 64 Q 65 61 72 64" stroke="#451a03" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-                <path d="M88 64 Q 95 61 102 64" stroke="#451a03" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-              </>
-            )}
-
-            {/* Dynamic Eyes */}
-            {mood === "celebrating" ? (
-              // Happy squinting / curved crescent eyes ( ^ _ ^ )
-              <g>
-                <path d="M58 74 Q 66 66 74 74" stroke="#1c1917" strokeWidth="3" strokeLinecap="round" fill="none" />
-                <path d="M86 74 Q 94 66 102 74" stroke="#1c1917" strokeWidth="3" strokeLinecap="round" fill="none" />
-              </g>
-            ) : mood === "thinking" ? (
-              // Curious eyes looking up and to the right
-              <g>
-                <circle cx="66" cy="72" r="7.5" fill="#1c1917" />
-                <ellipse cx="68" cy="70" rx="4" ry="4.5" fill="#38bdf8" />
-                <circle cx="69" cy="69" r="2" fill="#ffffff" />
-                <circle cx="66" cy="74" r="1.2" fill="#ffffff" />
-
-                <circle cx="94" cy="72" r="7.5" fill="#1c1917" />
-                <ellipse cx="96" cy="70" rx="4" ry="4.5" fill="#38bdf8" />
-                <circle cx="97" cy="69" r="2" fill="#ffffff" />
-                <circle cx="94" cy="74" r="1.2" fill="#ffffff" />
-              </g>
-            ) : mood === "pointing" ? (
-              // Focused gaze looking eagerly right towards the arrow
-              <g>
-                <circle cx="67" cy="73" r="7.5" fill="#1c1917" />
-                <ellipse cx="69" cy="73" rx="4.5" ry="5" fill="#0284c7" />
-                <circle cx="70" cy="71" r="2.2" fill="#ffffff" />
-                <circle cx="67" cy="75" r="1.2" fill="#ffffff" />
-
-                <circle cx="95" cy="73" r="7.5" fill="#1c1917" />
-                <ellipse cx="97" cy="73" rx="4.5" ry="5" fill="#0284c7" />
-                <circle cx="98" cy="71" r="2.2" fill="#ffffff" />
-                <circle cx="95" cy="75" r="1.2" fill="#ffffff" />
-              </g>
-            ) : (
-              // Default sparkling anime eyes with blinking animation
-              <g className="animate-bot-blink">
-                <circle cx="66" cy="73" r="7.5" fill="#1c1917" />
-                <ellipse cx="66" cy="73" rx="4.5" ry="5" fill="#2563eb" />
-                <circle cx="68" cy="71" r="2.2" fill="#ffffff" />
-                <circle cx="64" cy="75" r="1.2" fill="#ffffff" />
-
-                <circle cx="94" cy="73" r="7.5" fill="#1c1917" />
-                <ellipse cx="94" cy="73" rx="4.5" ry="5" fill="#2563eb" />
-                <circle cx="96" cy="71" r="2.2" fill="#ffffff" />
-                <circle cx="92" cy="75" r="1.2" fill="#ffffff" />
-              </g>
-            )}
-
-            {/* Dynamic Mouth / Smile */}
-            {mood === "celebrating" ? (
-              // Big joyful open grin with teeth and pink tongue
               <g>
                 <path
-                  d="M72 88 Q 80 102 88 88 Z"
-                  fill="#991b1b"
-                  stroke="#7f1d1d"
-                  strokeWidth="1.2"
+                  d="M 88 74 C 92 76, 104 82, 108 90 C 110 94, 105 97, 100 95 C 92 90, 86 82, 86 78 Z"
+                  fill="#50a2f5"
+                  stroke="#172554"
+                  strokeWidth="2.8"
+                  strokeLinejoin="round"
                 />
-                {/* Upper teeth white strip */}
-                <path d="M74 88 Q 80 91 86 88" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                {/* Pink tongue */}
-                <path d="M75 96 Q 80 94 85 96" fill="#f43f5e" />
               </g>
-            ) : mood === "thinking" ? (
-              // Curious tilted smirk
-              <path
-                d="M75 90 Q 82 92 86 88"
-                stroke="#1c1917"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                fill="none"
-              />
-            ) : mood === "pointing" ? (
-              // Enthusiastic confident smile
-              <path
-                d="M72 88 Q 80 97 88 88"
-                stroke="#1c1917"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                fill="none"
-              />
-            ) : (
-              // Warm friendly curved smile
-              <path
-                d="M73 88 Q 80 95 87 88"
-                stroke="#1c1917"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                fill="none"
-              />
             )}
           </g>
-
-          {/* 4. Fluffy Modern Cartoon Hair */}
-          <g id="fluffy-hair">
-            {/* Hair Base Layer Behind/Above */}
-            <path
-              d="M44 56 C 42 32, 60 22, 80 22 C 100 22, 118 32, 116 56 C 122 52, 124 64, 118 72 C 114 62, 114 50, 108 44 C 98 34, 62 34, 52 44 C 46 50, 46 62, 42 72 C 36 64, 38 52, 44 56 Z"
-              fill="url(#hair-dark)"
-            />
-
-            {/* Fluffy Hair Front Bangs & Tufts */}
-            <path
-              d="M46 52 C 54 36, 72 32, 84 34 C 96 32, 112 36, 114 52 C 110 52, 106 48, 98 46 C 92 56, 84 58, 80 50 C 76 58, 68 56, 62 46 C 56 48, 50 52, 46 52 Z"
-              fill="url(#hair-light)"
-            />
-
-            {/* Playful Cowlick / Hair Tuft on Top */}
-            <path
-              d="M78 24 C 80 14, 88 12, 92 16 C 88 18, 86 22, 82 24 Z"
-              fill="#78350f"
-            />
-            <path
-              d="M74 24 C 72 16, 66 14, 62 18 C 66 20, 68 22, 72 24 Z"
-              fill="#92400e"
-            />
-
-            {/* Golden/Warm Highlights */}
-            <path
-              d="M58 38 Q 68 34 76 38"
-              stroke="#fbbf24"
-              strokeWidth="2"
-              strokeLinecap="round"
-              opacity="0.4"
-            />
-            <path
-              d="M86 38 Q 94 34 102 38"
-              stroke="#fbbf24"
-              strokeWidth="2"
-              strokeLinecap="round"
-              opacity="0.4"
-            />
-          </g>
-
-          {/* Gradients */}
-          <defs>
-            <linearGradient id="skin-grad" x1="50" y1="48" x2="110" y2="110" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#ffedd5" />
-              <stop offset="1" stopColor="#fed7aa" />
-            </linearGradient>
-
-            <linearGradient id="hoodie-grad" x1="42" y1="116" x2="118" y2="168" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#27272a" />
-              <stop offset="0.5" stopColor="#1c1917" />
-              <stop offset="1" stopColor="#18181b" />
-            </linearGradient>
-
-            <linearGradient id="arm-grad" x1="0" y1="0" x2="1" y2="1">
-              <stop stopColor="#27272a" />
-              <stop offset="1" stopColor="#18181b" />
-            </linearGradient>
-
-            <linearGradient id="hair-dark" x1="40" y1="20" x2="120" y2="80" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#78350f" />
-              <stop offset="1" stopColor="#451a03" />
-            </linearGradient>
-
-            <linearGradient id="hair-light" x1="46" y1="32" x2="114" y2="60" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#b45309" />
-              <stop offset="0.5" stopColor="#92400e" />
-              <stop offset="1" stopColor="#78350f" />
-            </linearGradient>
-          </defs>
         </svg>
 
-        {/* Floating status badge */}
+        {/* Floating Status Badges */}
         {mood === "celebrating" && (
           <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black shadow-[0_0_12px_rgba(226,224,217,0.4)] animate-bounce">
             <Star className="h-3.5 w-3.5 fill-black" />

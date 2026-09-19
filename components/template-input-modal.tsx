@@ -322,7 +322,6 @@ export default function TemplateInputModal() {
       router.push(`/project/${projectId}`);
 
     } catch (error: unknown) {
-      console.error(error);
       alert(error instanceof Error ? error.message : "Failed to create mindmap");
     } finally {
       setIsGenerating(false);

@@ -53,7 +53,7 @@ const TOUR_STEPS: TourStep[] = [
     id: 3,
     selector: '[data-tour="nav-docs"]',
     title: "3. Documentation & System Guides",
-    description: "Learn how the semantic extraction pipeline, Dagre layout engine, multi-source parser, and creator script generator work under the hood.",
+    description: "Learn how the semantic extraction pipeline, Dagre layout engine, and multi-source parser work under the hood.",
     tip: "Includes keyboard shortcuts like (L) for layout and (F) for fit-view.",
     mascotMood: "thinking",
     speech: "Curious how our semantic DAG layout works? Documentation has all the technical details!",
@@ -100,19 +100,19 @@ const TOUR_STEPS: TourStep[] = [
     description: "Each session card displays thumbnail previews, node count, source badges, and last edited time. Click any card to enter the full canvas.",
     tip: "Inside the canvas you get Dagre auto-layout, mini-map, and multi-format exports.",
     mascotMood: "thinking",
-    speech: "Here are your mind maps! Click any card to open the interactive canvas with auto-layout.",
+    speech: "This is your mind maps workspace! All your visual knowledge cards appear right here.",
     arrowLabel: "Mind Maps",
-    preferredPlacement: "top",
+    preferredPlacement: "bottom",
   },
   {
     id: 8,
     selector: '[data-tour="sidebar-tour"]',
-    title: "8. Summon Leo Anytime",
+    title: "8. Summon Echo Anytime",
     description: "Need a refresher or want to run the guided tour again? Click this button anytime to summon me back.",
     tip: "Each screen (Dashboard, Canvas, Dump Window) has its own contextual tour.",
     mascotMood: "celebrating",
     speech: "You're all set to build amazing visual masterclasses! I'm always here if you need help.",
-    arrowLabel: "Summon Leo",
+    arrowLabel: "Summon Echo",
     preferredPlacement: "right",
   },
 ];
@@ -132,7 +132,7 @@ export function FloatingCharacterTour() {
     if (!step) return;
     const el = document.querySelector(step.selector);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      el.scrollIntoView({ behavior: "auto", block: "nearest" });
       setTargetRect(el.getBoundingClientRect());
     } else {
       setTargetRect(null);
@@ -141,9 +141,10 @@ export function FloatingCharacterTour() {
 
   useEffect(() => {
     if (!isFloatingTourOpen) return;
-    const rafId = requestAnimationFrame(() => {
-      updateTargetRect();
-    });
+    updateTargetRect();
+    const t1 = setTimeout(updateTargetRect, 60);
+    const t2 = setTimeout(updateTargetRect, 180);
+
     const handleResize = () => updateTargetRect();
     const handleScroll = () => updateTargetRect();
 
@@ -151,7 +152,8 @@ export function FloatingCharacterTour() {
     window.addEventListener("scroll", handleScroll, true);
 
     return () => {
-      cancelAnimationFrame(rafId);
+      clearTimeout(t1);
+      clearTimeout(t2);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleScroll, true);
     };
@@ -204,28 +206,52 @@ export function FloatingCharacterTour() {
 
   if (targetRect) {
     if (step.preferredPlacement === "right") {
-      cardX = targetRect.right + 44;
-      cardY = Math.max(20, Math.min(windowHeight - 420, targetRect.top - 20));
-      if (cardX + 400 > windowWidth) {
-        cardX = Math.max(20, targetRect.left - 420);
+      if (targetRect.right + 420 <= windowWidth - 20) {
+        cardX = targetRect.right + 24;
+      } else if (targetRect.left >= 420) {
+        cardX = targetRect.left - 410;
+      } else {
+        cardX = Math.max(20, windowWidth - 410);
       }
+      cardY = Math.max(20, Math.min(windowHeight - 400, targetRect.top - 20));
     } else if (step.preferredPlacement === "bottom") {
-      cardX = Math.max(20, Math.min(windowWidth - 420, targetRect.left - 30));
-      cardY = targetRect.bottom + 44;
-      if (cardY + 400 > windowHeight) {
-        cardY = Math.max(20, targetRect.top - 400);
+      cardX = Math.max(20, Math.min(windowWidth - 410, targetRect.left + (targetRect.width - 390) / 2));
+      if (targetRect.bottom + 380 <= windowHeight - 20) {
+        cardY = targetRect.bottom + 24;
+      } else if (targetRect.top - 380 >= 20) {
+        cardY = targetRect.top - 380;
+      } else {
+        cardY = Math.max(20, windowHeight - 400);
       }
     } else if (step.preferredPlacement === "top") {
-      cardX = Math.max(20, Math.min(windowWidth - 420, targetRect.left - 30));
-      cardY = Math.max(20, targetRect.top - 400);
-      if (cardY < 20) {
-        cardY = targetRect.bottom + 44;
+      cardX = Math.max(20, Math.min(windowWidth - 410, targetRect.left + (targetRect.width - 390) / 2));
+      if (targetRect.top - 380 >= 20) {
+        cardY = targetRect.top - 380;
+      } else if (targetRect.bottom + 380 <= windowHeight - 20) {
+        cardY = targetRect.bottom + 24;
+      } else {
+        cardY = 20;
       }
     } else if (step.preferredPlacement === "left") {
-      cardX = Math.max(20, targetRect.left - 420);
-      cardY = Math.max(20, Math.min(windowHeight - 420, targetRect.top - 20));
+      if (targetRect.left - 420 >= 20) {
+        cardX = targetRect.left - 410;
+      } else {
+        cardX = Math.min(windowWidth - 410, targetRect.right + 24);
+      }
+      cardY = Math.max(20, Math.min(windowHeight - 400, targetRect.top - 20));
     }
   }
+
+  // Calculate actual directional relationship so Echo's flipper points directly at targetRect
+  const actualPlacement = targetRect
+    ? cardY + 280 < targetRect.top
+      ? ("bottom" as const)
+      : cardY > targetRect.bottom - 40
+      ? ("top" as const)
+      : cardX > targetRect.right
+      ? ("left" as const)
+      : ("right" as const)
+    : step.preferredPlacement;
 
   // Calculate target center for the animated curly arrow
   const targetCenterX = targetRect ? targetRect.left + targetRect.width / 2 : windowWidth / 2;
@@ -244,11 +270,11 @@ export function FloatingCharacterTour() {
             <rect width="100%" height="100%" fill="white" />
             {targetRect && (
               <rect
-                x={targetRect.left - 6}
-                y={targetRect.top - 6}
-                width={targetRect.width + 12}
-                height={targetRect.height + 12}
-                rx="10"
+                x={Math.max(0, targetRect.left - 8)}
+                y={Math.max(0, targetRect.top - 8)}
+                width={targetRect.width + 16}
+                height={targetRect.height + 16}
+                rx="14"
                 fill="black"
               />
             )}
@@ -268,21 +294,21 @@ export function FloatingCharacterTour() {
         {/* Pulsing focus outline around target element */}
         {targetRect && (
           <rect
-            x={targetRect.left - 6}
-            y={targetRect.top - 6}
-            width={targetRect.width + 12}
-            height={targetRect.height + 12}
-            rx="10"
+            x={Math.max(0, targetRect.left - 8)}
+            y={Math.max(0, targetRect.top - 8)}
+            width={targetRect.width + 16}
+            height={targetRect.height + 16}
+            rx="14"
             fill="none"
             stroke="rgba(226, 224, 217, 0.85)"
-            strokeWidth="2"
+            strokeWidth="2.5"
             strokeDasharray="6 6"
             className="tour-curve"
           />
         )}
       </svg>
 
-      {/* Playful Curly Arrow connecting Leo to the spotlighted element */}
+      {/* Playful Curly Arrow connecting Echo to the spotlighted element */}
       {targetRect && (
         <CurlyArrow
           start={{ x: mascotCenterX, y: mascotCenterY }}
@@ -292,7 +318,7 @@ export function FloatingCharacterTour() {
         />
       )}
 
-      {/* Floating Leo Mascot & Instruction Card Container */}
+      {/* Floating Echo Mascot & Instruction Card Container */}
       <div
         style={{
           transform: `translate3d(${cardX}px, ${cardY}px, 0)`,
@@ -300,10 +326,11 @@ export function FloatingCharacterTour() {
         }}
         className="absolute top-0 left-0 z-50 flex flex-col items-start gap-2.5 pointer-events-auto max-w-[390px]"
       >
-        {/* Floating Cartoon Boy (Leo) */}
+        {/* Floating Cartoon Dolphin (Echo) */}
         <div className="flex items-end gap-2.5">
           <CartoonMascot
             mood={step.mascotMood}
+            placement={actualPlacement}
             speechText={step.speech}
             size="sm"
           />

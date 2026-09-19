@@ -75,9 +75,11 @@ export default function DashboardClient({ projects }: DashboardClientProps) {
                 </button>
               </div>
             ) : projects.length > 0 ? (
-              <p className="text-sm text-muted py-8 text-center">No projects match your search.</p>
+              <div data-tour="projects-grid" className="text-sm text-muted py-8 text-center">
+                No projects match your search.
+              </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-20 px-4 border border-dashed border-white/10 rounded-xl bg-white/[0.02]">
+              <div data-tour="projects-grid" className="flex flex-col items-center justify-center py-20 px-4 border border-dashed border-white/10 rounded-xl bg-white/[0.02]">
                 <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4">
                   <BrainCircuit className="w-8 h-8 text-muted" />
                 </div>

@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, Code2, BookOpen, Film, AlertTriangle, Lightbulb, Copy, Check, Sparkles, Plus } from "lucide-react";
+import { X, Code2, BookOpen, AlertTriangle, Lightbulb, Copy, Check, Plus } from "lucide-react";
 import { CATEGORY_ACCENT_BORDER, CATEGORY_LABELS, type Category } from "@/lib/constants";
-import type { ScriptLanguage } from "@/lib/creator-script";
 
 interface ConceptDeepModalProps {
   isOpen: boolean;
@@ -17,7 +16,6 @@ interface ConceptDeepModalProps {
     tags: string[];
   } | null;
   onAddSubConcept?: (parentId: string) => void;
-  language?: ScriptLanguage;
 }
 
 export function ConceptDeepModal({
@@ -25,9 +23,8 @@ export function ConceptDeepModal({
   onClose,
   node,
   onAddSubConcept,
-  language = "english",
 }: ConceptDeepModalProps) {
-  const [activeTab, setActiveTab] = useState<"overview" | "code" | "script">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "code">("overview");
   const [copiedCode, setCopiedCode] = useState(false);
 
   if (!node) return null;
@@ -140,16 +137,6 @@ export function ConceptDeepModal({
             >
               <Code2 className="w-3.5 h-3.5" /> Code & Execution
             </button>
-            <button
-              onClick={() => setActiveTab("script")}
-              className={`pb-3 pt-3 text-xs font-medium font-mono transition-colors border-b-2 flex items-center gap-1.5 cursor-pointer ${
-                activeTab === "script"
-                  ? "border-accent text-accent"
-                  : "border-transparent text-muted hover:text-white"
-              }`}
-            >
-              <Film className="w-3.5 h-3.5" /> Creator Script Delivery
-            </button>
           </div>
 
           {/* Modal Content */}
@@ -231,28 +218,9 @@ export function ConceptDeepModal({
                 </pre>
               </div>
             )}
-
-            {activeTab === "script" && (
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl border border-white/5 bg-white/[0.02] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono text-accent font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" /> Spoken Presentation Delivery
-                    </span>
-                    <span className="text-[11px] font-mono text-muted uppercase">
-                      Language: {language}
-                    </span>
-                  </div>
-                  <p className="text-sm leading-relaxed text-zinc-200 italic font-sans bg-black/30 p-3.5 rounded-lg border border-white/5">
-                    &ldquo;In this segment, let&apos;s look closely at {node.label}. Under the hood, {node.summary}. Notice how this connects directly with the surrounding nodes on our canvas!&rdquo;
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
   );
 }
-

@@ -50,17 +50,6 @@ const CANVAS_TOUR_STEPS: CanvasTourStep[] = [
   },
   {
     id: 3,
-    selector: '[data-tour="canvas-script"]',
-    title: "Creator Script & Lecture Studio",
-    description: "Ready to record a YouTube video, course lecture, or team walkthrough? Click 'Script Studio' to launch your scene-by-scene script with analogies, code snippets, and live teleprompter mode.",
-    tip: "Export to clean Markdown or rehearse with the built-in teleprompter.",
-    mascotMood: "celebrating",
-    speech: "This is your secret weapon! A full YouTube or course script ready for recording.",
-    arrowLabel: "Script Studio",
-    preferredPlacement: "bottom",
-  },
-  {
-    id: 4,
     selector: '[data-tour="canvas-layout"]',
     title: "Dagre Auto-Layout & Export",
     description: "Clean up messy node positions instantly with hierarchical Dagre layout, and export high-res SVGs, PNGs, or Markdown for your presentations and slides.",
@@ -71,7 +60,7 @@ const CANVAS_TOUR_STEPS: CanvasTourStep[] = [
     preferredPlacement: "bottom",
   },
   {
-    id: 5,
+    id: 4,
     selector: '[data-tour="canvas-sources"]',
     title: "Source Inspector & Outline",
     description: "Toggle the source inspector sidebar to review original documentation sources or click any item in the concept outline to jump right to it.",
@@ -236,7 +225,7 @@ export function CanvasFloatingTour({ isOpen: controlledIsOpen, onClose: controll
         />
       )}
 
-      {/* Cartoon Mascot Leo */}
+      {/* Cartoon Mascot Echo */}
       <div
         className="absolute pointer-events-auto transition-all duration-500 ease-out z-20"
         style={{
@@ -245,6 +234,7 @@ export function CanvasFloatingTour({ isOpen: controlledIsOpen, onClose: controll
       >
         <CartoonMascot
           mood={step.mascotMood}
+          placement={step.preferredPlacement}
           size="sm"
           speechText={step.speech}
         />

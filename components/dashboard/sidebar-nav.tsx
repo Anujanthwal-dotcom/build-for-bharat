@@ -46,7 +46,7 @@ export function SidebarNav() {
         <button
           onClick={() => startFloatingTour()}
           className="w-full text-left rounded-lg border border-white/10 bg-white/[0.02] p-2.5 transition-all hover:border-white/20 hover:bg-white/[0.05] group cursor-pointer"
-          title="Start interactive guided tour with Leo"
+          title="Start interactive guided tour with Echo"
         >
           <div className="flex items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white/5 text-accent border border-white/10 group-hover:scale-105 transition-transform">
@@ -57,7 +57,7 @@ export function SidebarNav() {
                 Guided Tour
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent/80 animate-ping" />
               </div>
-              <div className="text-[10px] text-muted font-mono">Explore with Leo</div>
+              <div className="text-[10px] text-muted font-mono">Explore with Echo</div>
             </div>
           </div>
         </button>

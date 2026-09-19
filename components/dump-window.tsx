@@ -133,7 +133,7 @@ export default function DumpWindowModal() {
                 type="button"
                 onClick={() => setIsTourOpen(true)}
                 className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono text-white/80 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-colors cursor-pointer"
-                title="Start Guided Tour with Leo"
+                title="Start Guided Tour with Echo"
               >
                 <Bot className="w-3.5 h-3.5 text-accent" />
                 <span>Guide Me</span>

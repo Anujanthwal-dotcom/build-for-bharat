@@ -18,8 +18,8 @@ interface DumpTourStep {
   tab: "text" | "links" | "files";
   selector: string;
   title: string;
-  description: string;
-  tip: string;
+  description?: string;
+  tip?: string;
   mascotMood: MascotMood;
   speech: string;
   arrowLabel?: string;
@@ -69,7 +69,7 @@ const DUMP_TOUR_STEPS: DumpTourStep[] = [
     selector: '[data-tour="dump-depth-slider"]',
     title: "4. Select Extraction Depth",
     description: "Slide to configure the granularity: 'Summary' produces a high-level overview, while 'Deep Dive' creates comprehensive sub-concept networks.",
-    tip: "Standard or Deep Dive works best if you plan to generate lecture scripts in Script Studio.",
+    tip: "Standard or Deep Dive works best for comprehensive knowledge extraction and detailed concept breakdowns.",
     mascotMood: "thinking",
     speech: "Tune the slider: choose between a high-level summary or an exhaustive deep dive!",
     arrowLabel: "Depth Slider",
@@ -80,7 +80,7 @@ const DUMP_TOUR_STEPS: DumpTourStep[] = [
     tab: "files",
     selector: '[data-tour="dump-build-btn"]',
     title: "5. Build Your Visual Mind Map",
-    description: "Click 'Build Mind Map' to launch extraction. In seconds, you will be redirected to the interactive Railway canvas with auto-layout and script generation!",
+    description: "Click 'Build Mind Map' to launch extraction. In seconds, you will be redirected to the interactive canvas with auto-layout and deep-dive exploration!",
     tip: "After building, you can drag nodes, inspect connections, and export high-res SVGs.",
     mascotMood: "celebrating",
     speech: "You're all set! Hit 'Build Mind Map' and watch your mental model come alive!",
@@ -182,8 +182,8 @@ export function DumpTour({ isOpen, onClose, onTabChange }: DumpTourProps) {
   const windowHeight = typeof window !== "undefined" ? window.innerHeight : 800;
   const isMobile = windowWidth < 768;
 
-  const cardWidth = Math.min(360, windowWidth - 32);
-  const cardHeight = 300;
+  const cardWidth = Math.min(340, windowWidth - 32);
+  const cardHeight = 150;
 
   let cardX = 20;
   let cardY = 120;
@@ -191,7 +191,7 @@ export function DumpTour({ isOpen, onClose, onTabChange }: DumpTourProps) {
   if (isMobile) {
     // Dock cleanly at bottom on small screens
     cardX = (windowWidth - cardWidth) / 2;
-    cardY = Math.max(20, windowHeight - cardHeight - 20);
+    cardY = Math.max(105, windowHeight - cardHeight - 20);
   } else if (targetRect) {
     // On desktop, find best placement relative to targetRect
     const spaceRight = windowWidth - targetRect.right;
@@ -200,32 +200,32 @@ export function DumpTour({ isOpen, onClose, onTabChange }: DumpTourProps) {
     if (spaceRight >= cardWidth + 24) {
       // Place to the right of the target modal
       cardX = targetRect.right + 20;
-      cardY = Math.max(20, Math.min(windowHeight - cardHeight - 20, targetRect.top));
+      cardY = Math.max(105, Math.min(windowHeight - cardHeight - 20, targetRect.top));
     } else if (spaceLeft >= cardWidth + 24) {
       // Place to the left of the target modal
       cardX = targetRect.left - cardWidth - 20;
-      cardY = Math.max(20, Math.min(windowHeight - cardHeight - 20, targetRect.top));
+      cardY = Math.max(105, Math.min(windowHeight - cardHeight - 20, targetRect.top));
     } else {
       // Place below target or at bottom
       cardX = Math.max(20, Math.min(windowWidth - cardWidth - 20, targetRect.left));
       if (targetRect.bottom + cardHeight + 20 <= windowHeight) {
         cardY = targetRect.bottom + 16;
       } else {
-        cardY = Math.max(20, targetRect.top - cardHeight - 16);
+        cardY = Math.max(105, targetRect.top - cardHeight - 16);
       }
     }
   }
 
   // Clamping within viewport
   cardX = Math.max(16, Math.min(windowWidth - cardWidth - 16, cardX));
-  cardY = Math.max(16, Math.min(windowHeight - cardHeight - 16, cardY));
+  cardY = Math.max(105, Math.min(windowHeight - cardHeight - 16, cardY));
 
   const targetCenterX = targetRect ? targetRect.left + targetRect.width / 2 : windowWidth / 2;
   const targetCenterY = targetRect ? targetRect.top + targetRect.height / 2 : windowHeight / 2;
 
   // Mascot positioned atop the card
   const mascotX = Math.min(windowWidth - 130, Math.max(16, cardX + cardWidth - 120));
-  const mascotY = Math.max(8, cardY - 95);
+  const mascotY = Math.max(10, cardY - 95);
   const mascotCenterX = mascotX + 45;
   const mascotCenterY = mascotY + 45;
 
@@ -250,7 +250,7 @@ export function DumpTour({ isOpen, onClose, onTabChange }: DumpTourProps) {
         />
       )}
 
-      {/* Curly Arrow pointing from Leo to target */}
+      {/* Curly Arrow pointing from Echo to target */}
       {targetRect && (
         <CurlyArrow
           start={{ x: mascotCenterX, y: mascotCenterY }}
@@ -260,7 +260,7 @@ export function DumpTour({ isOpen, onClose, onTabChange }: DumpTourProps) {
         />
       )}
 
-      {/* Floating Leo Mascot */}
+      {/* Floating Echo Mascot */}
       <div
         className="absolute pointer-events-auto transition-all duration-300 ease-out z-20"
         style={{
@@ -269,6 +269,7 @@ export function DumpTour({ isOpen, onClose, onTabChange }: DumpTourProps) {
       >
         <CartoonMascot
           mood={step.mascotMood}
+          placement={step.preferredPlacement}
           size="sm"
           speechText={step.speech}
         />
@@ -282,9 +283,9 @@ export function DumpTour({ isOpen, onClose, onTabChange }: DumpTourProps) {
           transform: `translate3d(${cardX}px, ${cardY}px, 0)`,
         }}
       >
-        <div className="rounded-xl border border-white/10 bg-[#121214] p-5 shadow-[0_24px_64px_rgba(0,0,0,0.85)] backdrop-blur-2xl animate-fade-in-up">
+        <div className="rounded-xl border border-white/10 bg-[#121214] p-4 shadow-[0_24px_64px_rgba(0,0,0,0.85)] backdrop-blur-2xl animate-fade-in-up max-h-[80vh] overflow-y-auto">
           {/* Card Header */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
+          <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-2.5">
             <div className="flex items-center gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-accent font-mono text-[10px] font-bold border border-white/15">
                 {step.id}
@@ -302,25 +303,24 @@ export function DumpTour({ isOpen, onClose, onTabChange }: DumpTourProps) {
             </button>
           </div>
 
-          {/* Card Body */}
+          {/* Card Body (Clean & Compact without overflowing detailed description) */}
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-white/90 flex items-center gap-2">
               {step.title}
               <Sparkles className="h-3.5 w-3.5 text-accent" />
             </h3>
-            <p className="text-xs leading-relaxed text-muted">
-              {step.description}
-            </p>
 
             {/* Pro Tip Pill */}
-            <div className="mt-2.5 rounded-lg border border-white/10 bg-white/[0.03] p-2.5 flex items-start gap-2 text-[11px] text-zinc-300">
-              <Zap className="h-3.5 w-3.5 text-accent shrink-0 mt-0.5" />
-              <span>{step.tip}</span>
-            </div>
+            {step.tip && (
+              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2 flex items-start gap-2 text-[11px] text-zinc-300">
+                <Zap className="h-3.5 w-3.5 text-accent shrink-0 mt-0.5" />
+                <span className="leading-snug">{step.tip}</span>
+              </div>
+            )}
           </div>
 
           {/* Card Navigation Footer */}
-          <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+          <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-2.5">
             <button
               onClick={handleClose}
               className="text-xs font-mono text-muted hover:text-white transition-colors cursor-pointer"

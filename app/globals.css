@@ -24,6 +24,7 @@
   --animate-bot-blink: bot-blink 4s ease-in-out infinite;
   --animate-bot-wave: bot-wave 1.6s ease-in-out infinite;
   --animate-bot-point: bot-point 1.4s ease-in-out infinite;
+  --animate-bot-point-down: bot-point-down 1.4s ease-in-out infinite;
   --animate-bot-celebrate: bot-celebrate 1.5s ease-in-out infinite;
 
   @keyframes fade-in {
@@ -109,6 +110,15 @@
     }
     50% {
       transform: scale(1.08) translateX(4px);
+    }
+  }
+
+  @keyframes bot-point-down {
+    0%, 100% {
+      transform: scale(1) translateY(0);
+    }
+    50% {
+      transform: scale(1.08) translateY(4px);
     }
   }
 
