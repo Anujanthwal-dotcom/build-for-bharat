@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, FileText, Link as LinkIcon, ListTree, PanelRightClose, PanelRightOpen, Search } from "lucide-react";
+import { ChevronDown, FileText, Link as LinkIcon, ListTree, PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 import { GlassInput } from "@/components/ui/glass-input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,9 +21,18 @@ interface SourceInspectorProps {
   outline: OutlineItem[];
   selectedNodeId?: string | null;
   onOutlineSelect?: (nodeId: string) => void;
+  onClose?: () => void;
+  nodesCount?: number;
 }
 
-export function SourceInspector({ sources, outline, selectedNodeId, onOutlineSelect }: SourceInspectorProps) {
+export function SourceInspector({
+  sources,
+  outline,
+  selectedNodeId,
+  onOutlineSelect,
+  onClose,
+  nodesCount,
+}: SourceInspectorProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [query, setQuery] = useState("");
 
@@ -31,30 +40,38 @@ export function SourceInspector({ sources, outline, selectedNodeId, onOutlineSel
     item.label.toLowerCase().includes(query.toLowerCase()),
   );
 
-  if (collapsed) {
+  if (!onClose && collapsed) {
     return (
       <button
         onClick={() => setCollapsed(false)}
-        className="flex h-full items-center gap-2 border-r border-white/[0.07] bg-[#0d0d11]/90 px-2.5 text-zinc-400 transition-colors hover:text-white"
+        className="flex h-full items-center gap-2 border-r border-white/[0.07] bg-[#0d0d11]/90 px-2.5 text-zinc-400 transition-colors hover:text-white cursor-pointer"
         title="Expand source inspector"
       >
-        <PanelRightOpen className="h-4 w-4" />
+        <PanelLeftOpen className="h-4 w-4" />
       </button>
     );
   }
 
   return (
-    <div className="flex h-full w-72 flex-col border-r border-white/[0.07] bg-[#0d0d11]/80 backdrop-blur-xl">
+    <div className="flex h-full w-full flex-1 flex-col bg-[#0d0d11]/80 backdrop-blur-xl">
       <div className="flex items-center justify-between px-3 py-3 border-b border-white/[0.05]">
         <div className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
           <ListTree className="h-3.5 w-3.5" /> Sources
         </div>
-        <button
-          onClick={() => setCollapsed(true)}
-          className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-white/10 hover:text-zinc-300"
-        >
-          <PanelRightClose className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          {nodesCount !== undefined && (
+            <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-white/5 border border-white/10 text-muted">
+              {nodesCount} Nodes
+            </span>
+          )}
+          <button
+            onClick={onClose ? onClose : () => setCollapsed(true)}
+            className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-white/10 hover:text-zinc-300 cursor-pointer"
+            title="Collapse sidebar"
+          >
+            <PanelLeftClose className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <div className="relative px-3 py-3">

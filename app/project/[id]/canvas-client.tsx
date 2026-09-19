@@ -25,6 +25,8 @@ import {
   Layers,
   Bot,
   Plus,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -465,6 +467,10 @@ function CanvasContent({
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
 
       switch (event.key.toLowerCase()) {
+        case "s":
+          event.preventDefault();
+          setIsSidebarOpen((prev) => !prev);
+          break;
         case "l":
           event.preventDefault();
           handleAutoLayout();
@@ -485,105 +491,122 @@ function CanvasContent({
   );
 
   return (
-    <div className="flex h-screen w-full bg-[#09090b] text-white overflow-hidden font-sans select-none" onKeyDown={handleKeyDown} tabIndex={-1}>
-      {/* Collapsible Left Sidebar */}
-      <div className={`transition-all duration-300 border-r border-white/10 bg-[#0d0d11] flex flex-col z-20 ${isSidebarOpen ? 'w-80' : 'w-0 overflow-hidden'}`}>
-        <div className="p-4 border-b border-white/5 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2 text-xs text-muted hover:text-white transition-colors cursor-pointer">
+    <div className="flex flex-col h-screen w-full bg-[#09090b] text-white overflow-hidden font-sans select-none" onKeyDown={handleKeyDown} tabIndex={-1}>
+      {/* Full-width Top Bar */}
+      <div data-tour="canvas-header" className="h-14 border-b border-white/10 bg-[#0d0d11]/90 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 z-30 shrink-0">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 text-xs text-muted hover:text-white transition-colors cursor-pointer py-1.5 px-2 -ml-2 rounded-md hover:bg-white/5"
+            title="Back to Dashboard"
+          >
             <ArrowLeft className="w-4 h-4" />
-            <span>Dashboard</span>
+            <span className="font-medium">Dashboard</span>
           </Link>
-          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-white/5 border border-white/10 text-muted">
-            {nodes.length} Nodes
+
+          <div className="h-4 w-px bg-white/10" />
+
+          {!isSidebarOpen && (
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-colors text-muted hover:text-white flex items-center gap-1.5 text-xs cursor-pointer"
+              title="Expand sources sidebar (S)"
+            >
+              <PanelLeftOpen className="w-4 h-4 text-accent" />
+              <span className="hidden sm:inline text-xs font-medium">Sources</span>
+            </button>
+          )}
+
+          <h1 className="text-sm font-semibold tracking-tight text-white/90">
+            {project.name}
+          </h1>
+
+          <span className="flex items-center gap-1.5 text-[11px] font-mono text-muted">
+            <span className={`w-1.5 h-1.5 rounded-full ${
+              saveStatus === "saved"
+                ? "bg-emerald-400"
+                : saveStatus === "saving"
+                ? "bg-amber-400 animate-ping"
+                : "bg-zinc-500"
+            }`} />
+            {saveStatus === "saved" ? "Saved" : saveStatus === "saving" ? "Saving..." : "Unsaved"}
           </span>
         </div>
-        
-        <SourceInspector
-          sources={sources}
-          outline={outline}
-          onOutlineSelect={handleOutlineSelect}
-          selectedNodeId={selectedNodeId}
-        />
+
+        <div className="flex items-center gap-2">
+          {/* Add Concept button */}
+          <button
+            onClick={() => {
+              setAddConceptParentId(null);
+              setIsAddConceptOpen(true);
+            }}
+            className="p-1.5 bg-accent text-black hover:bg-accent/90 rounded-md transition-all flex items-center gap-1.5 text-xs font-medium px-3 shadow-sm cursor-pointer"
+            title="Add a new concept node to the mind map"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Concept</span>
+          </button>
+
+          {/* Guided Tour button */}
+          <button
+            onClick={() => setIsCanvasTourOpen(true)}
+            className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-colors text-muted hover:text-white flex items-center gap-1.5 text-xs font-medium px-2.5 cursor-pointer"
+            title="Launch Guided Canvas Tour"
+          >
+            <Bot className="w-3.5 h-3.5 text-accent" />
+            <span>Tour</span>
+          </button>
+
+          <button
+            data-tour="canvas-layout"
+            onClick={handleAutoLayout}
+            className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-colors text-muted hover:text-white flex items-center gap-2 text-xs font-medium px-3 cursor-pointer"
+          >
+            <LayoutTemplate className="w-3.5 h-3.5" />
+            Auto-Layout
+          </button>
+
+          <div className="h-4 w-px bg-white/10" />
+
+          <ExportMenu projectId={projectId} />
+
+          <button
+            onClick={handleShare}
+            className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-muted hover:text-white cursor-pointer"
+            title="Copy link"
+          >
+            {linkCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share className="w-4 h-4" />}
+          </button>
+
+          <button
+            data-tour="canvas-sources"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className={`p-1.5 rounded-md transition-colors cursor-pointer ${isSidebarOpen ? 'bg-accent/20 text-accent' : 'hover:bg-white/10 text-muted hover:text-white'}`}
+            title={isSidebarOpen ? "Collapse sidebar (S)" : "Expand sidebar (S)"}
+          >
+            <Layers className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* Canvas + Overlays */}
-      <div className="flex-1 flex flex-col relative h-full">
-        {/* Canvas Header Bar */}
-        <div data-tour="canvas-header" className="h-14 border-b border-white/10 bg-[#0d0d11]/80 backdrop-blur-md flex items-center justify-between px-6 z-10">
-          <div className="flex items-center gap-4">
-            <h1 className="text-sm font-semibold tracking-tight text-white/90">
-              {project.name}
-            </h1>
-            <span className="flex items-center gap-1.5 text-[11px] font-mono text-muted">
-              <span className={`w-1.5 h-1.5 rounded-full ${
-                saveStatus === "saved"
-                  ? "bg-emerald-400"
-                  : saveStatus === "saving"
-                  ? "bg-amber-400 animate-ping"
-                  : "bg-zinc-500"
-              }`} />
-              {saveStatus === "saved" ? "Saved" : saveStatus === "saving" ? "Saving..." : "Unsaved"}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Add Concept button */}
-            <button
-              onClick={() => {
-                setAddConceptParentId(null);
-                setIsAddConceptOpen(true);
-              }}
-              className="p-1.5 bg-accent text-black hover:bg-accent/90 rounded-md transition-all flex items-center gap-1.5 text-xs font-medium px-3 shadow-sm cursor-pointer"
-              title="Add a new concept node to the mind map"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Concept</span>
-            </button>
-
-            {/* Guided Tour button */}
-            <button
-              onClick={() => setIsCanvasTourOpen(true)}
-              className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-colors text-muted hover:text-white flex items-center gap-1.5 text-xs font-medium px-2.5 cursor-pointer"
-              title="Launch Guided Canvas Tour"
-            >
-              <Bot className="w-3.5 h-3.5 text-accent" />
-              <span>Tour</span>
-            </button>
-
-            <button
-              data-tour="canvas-layout"
-              onClick={handleAutoLayout}
-              className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-colors text-muted hover:text-white flex items-center gap-2 text-xs font-medium px-3 cursor-pointer"
-            >
-              <LayoutTemplate className="w-3.5 h-3.5" />
-              Auto-Layout
-            </button>
-
-            <div className="h-4 w-px bg-white/10" />
-
-            <ExportMenu projectId={projectId} />
-
-            <button
-              onClick={handleShare}
-              className="p-1.5 hover:bg-white/10 rounded-md transition-colors text-muted hover:text-white cursor-pointer"
-              title="Copy link"
-            >
-              {linkCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share className="w-4 h-4" />}
-            </button>
-
-            <button
-              data-tour="canvas-sources"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={`p-1.5 rounded-md transition-colors cursor-pointer ${isSidebarOpen ? 'bg-accent/20 text-accent' : 'hover:bg-white/10 text-muted hover:text-white'}`}
-              title="Toggle sources"
-            >
-              <Layers className="w-4 h-4" />
-            </button>
+      {/* Main Content Area: Sidebar + Canvas */}
+      <div className="flex-1 flex relative overflow-hidden">
+        {/* Collapsible Left Sidebar (Sources Inspector Only) */}
+        <div className={`transition-all duration-300 bg-[#0d0d11] flex flex-col z-20 ${isSidebarOpen ? 'w-80 border-r border-white/10' : 'w-0 border-r-0 overflow-hidden'}`}>
+          <div className="w-80 h-full flex flex-col shrink-0">
+            <SourceInspector
+              sources={sources}
+              outline={outline}
+              onOutlineSelect={handleOutlineSelect}
+              selectedNodeId={selectedNodeId}
+              onClose={() => setIsSidebarOpen(false)}
+              nodesCount={nodes.length}
+            />
           </div>
         </div>
 
         {/* Main Canvas Area */}
-        <div data-tour="canvas-flow" className="flex-1 relative">
+        <div data-tour="canvas-flow" className="flex-1 relative h-full">
           <ReactFlow
             nodes={nodesWithCallbacks}
             edges={displayedEdges}
