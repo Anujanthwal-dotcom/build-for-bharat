@@ -29,13 +29,15 @@ const CustomNode = ({ id, data, selected }: CustomNodeProps) => {
           : 'border-white/[0.08] hover:border-white/[0.2] hover:shadow-xl hover:shadow-black/50 hover:-translate-y-0.5'
       } bg-[#141418]/95 backdrop-blur-md border`}
     >
-      {/* Category accent bar at top */}
-      <div
-        className="h-[3px] rounded-t-xl"
-        style={{ backgroundColor: accentColor }}
-      />
+      {/* Clipped content wrapper to align accent bar and content with the rounded corners */}
+      <div className="overflow-hidden rounded-[calc(0.75rem-1px)]">
+        {/* Category accent bar at top */}
+        <div
+          className="h-[6px] w-full"
+          style={{ backgroundColor: accentColor }}
+        />
 
-      <div className="p-4">
+        <div className="p-4">
         {/* Category badge & quick add */}
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-1.5">
@@ -108,6 +110,7 @@ const CustomNode = ({ id, data, selected }: CustomNodeProps) => {
         >
           <span>Inspect breakdown</span>
           <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+        </div>
         </div>
       </div>
 
