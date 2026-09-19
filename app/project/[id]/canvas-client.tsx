@@ -673,6 +673,7 @@ function CanvasContent({
               setDeepModalNodeId(null);
             }}
             node={deepModalNode}
+            projectTitle={project.name}
             onAddSubConcept={(parentId) => {
               setAddConceptParentId(parentId);
               setIsAddConceptOpen(true);

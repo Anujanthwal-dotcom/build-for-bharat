@@ -22,6 +22,7 @@ import {
   Lightbulb,
   Link2,
   Unlink,
+  Sparkles,
 } from "lucide-react";
 import { CATEGORIES, CATEGORY_ACCENT_BORDER, CATEGORY_LABELS, type Category } from "@/lib/constants";
 
@@ -281,17 +282,27 @@ export function NodeDetailPanel({
             </div>
 
             {/* Quick Action Buttons */}
-            {onAddSubConcept && (
-              <div className="mt-3 flex items-center gap-2 pt-3 border-t border-white/5">
+            <div className="mt-3 flex items-center gap-2 pt-3 border-t border-white/5">
+              {onOpenDeepModal && (
+                <button
+                  onClick={() => onOpenDeepModal(node.id)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/30 transition-colors cursor-pointer w-full justify-center"
+                  title="Open AI deep dive with live Google Search grounding"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Google Deep Dive</span>
+                </button>
+              )}
+              {onAddSubConcept && (
                 <button
                   onClick={() => onAddSubConcept(node.id)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer w-full justify-center"
                 >
                   <Plus className="w-3.5 h-3.5 text-accent" />
-                  <span>+ Add Sub-Concept</span>
+                  <span>+ Sub-Concept</span>
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
