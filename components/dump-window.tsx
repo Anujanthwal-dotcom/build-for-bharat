@@ -28,11 +28,11 @@ export default function DumpWindowModal() {
       try {
         const seen = localStorage.getItem("mindflow_dump_tour_seen");
         if (!seen) {
-          setIsTourOpen(true);
+          setTimeout(() => setIsTourOpen(true), 0);
         }
       } catch {}
     } else {
-      setIsTourOpen(false);
+      setTimeout(() => setIsTourOpen(false), 0);
     }
   }, [isDumpWindowOpen]);
 

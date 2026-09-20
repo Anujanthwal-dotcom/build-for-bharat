@@ -38,19 +38,22 @@ export function AddConceptModal({
 
   // Sync initialParentId when modal opens
   useEffect(() => {
-    if (isOpen) {
-      if (initialParentId) {
-        setParentId(initialParentId);
-        setEdgeLabel("sub-concept of");
+    const timer = setTimeout(() => {
+      if (isOpen) {
+        if (initialParentId) {
+          setParentId(initialParentId);
+          setEdgeLabel("sub-concept of");
+        } else {
+          setParentId("");
+          setEdgeLabel("");
+        }
       } else {
-        setParentId("");
-        setEdgeLabel("");
+        setLabel("");
+        setSummary("");
+        setTagsInput("");
       }
-    } else {
-      setLabel("");
-      setSummary("");
-      setTagsInput("");
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [isOpen, initialParentId]);
 
   const handleSubmit = (e: React.FormEvent) => {

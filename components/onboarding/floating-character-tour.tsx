@@ -139,7 +139,7 @@ export function FloatingCharacterTour() {
 
   useEffect(() => {
     if (!isFloatingTourOpen) return;
-    updateTargetRect();
+    const t0 = setTimeout(updateTargetRect, 0);
     const t1 = setTimeout(updateTargetRect, 60);
     const t2 = setTimeout(updateTargetRect, 180);
 
@@ -150,6 +150,7 @@ export function FloatingCharacterTour() {
     window.addEventListener("scroll", handleScroll, true);
 
     return () => {
+      clearTimeout(t0);
       clearTimeout(t1);
       clearTimeout(t2);
       window.removeEventListener("resize", handleResize);
