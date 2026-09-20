@@ -6,7 +6,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 
-const authSecret = process.env.AUTH_SECRET?.trim() || "development-auth-secret-change-me";
+const authSecret = process.env.AUTH_SECRET?.trim() || process.env.NEXTAUTH_SECRET?.trim() || "development-auth-secret-change-me";
 
 export function isGuestEmail(email?: string | null): boolean {
   if (!email) return false;
