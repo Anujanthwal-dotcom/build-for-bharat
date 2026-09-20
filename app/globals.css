@@ -1,0 +1,224 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-background: #09090b;
+  --color-foreground: rgba(255, 255, 255, 0.85);
+  --color-muted: rgba(255, 255, 255, 0.45);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-accent: #E2E0D9;
+  --color-glass-bg: rgba(24, 24, 27, 0.4);
+
+  --font-sans: var(--font-anthropic-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-anthropic-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-anthropic-mono), ui-monospace, "SF Mono", monospace;
+
+  --animate-fade-in: fade-in 0.4s ease-out;
+  --animate-fade-in-up: fade-in-up 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-pulse-glow: pulse-glow 3s ease-in-out infinite;
+  --animate-slide-in-right: slide-in-right 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dash-flow: dash-flow 1.2s linear infinite;
+  --animate-mascot-bob: mascot-bob 3s ease-in-out infinite;
+  --animate-bot-blink: bot-blink 4s ease-in-out infinite;
+  --animate-bot-wave: bot-wave 1.6s ease-in-out infinite;
+  --animate-bot-point: bot-point 1.4s ease-in-out infinite;
+  --animate-bot-point-down: bot-point-down 1.4s ease-in-out infinite;
+  --animate-bot-celebrate: bot-celebrate 1.5s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes dash-flow {
+    to {
+      stroke-dashoffset: -20;
+    }
+  }
+
+  @keyframes mascot-bob {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes bot-blink {
+    0%, 90%, 100% {
+      transform: scaleY(1);
+    }
+    95% {
+      transform: scaleY(0.1);
+    }
+  }
+
+  @keyframes bot-wave {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(14deg);
+    }
+    75% {
+      transform: rotate(-10deg);
+    }
+  }
+
+  @keyframes bot-point {
+    0%, 100% {
+      transform: scale(1) translateX(0);
+    }
+    50% {
+      transform: scale(1.08) translateX(4px);
+    }
+  }
+
+  @keyframes bot-point-down {
+    0%, 100% {
+      transform: scale(1) translateY(0);
+    }
+    50% {
+      transform: scale(1.08) translateY(4px);
+    }
+  }
+
+  @keyframes bot-celebrate {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-6px) rotate(8deg);
+    }
+  }
+
+  @keyframes tour-curve {
+    to {
+      stroke-dashoffset: -40;
+    }
+  }
+
+}
+
+@utility glass {
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+@utility dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+@utility mesh-bg {
+  background-image: radial-gradient(at 0% 0%, rgba(226, 224, 217, 0.05) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(226, 224, 217, 0.03) 0px, transparent 50%);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: rgba(226, 224, 217, 0.2);
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.react-flow__attribution {
+  display: none !important;
+}
+
+.react-flow__edge.animated path {
+  animation: none !important;
+}
+
+/* Pointer cursor for all interactive elements */
+button,
+a,
+[role="button"],
+[type="button"],
+[type="submit"],
+[type="reset"],
+select,
+summary,
+label[for],
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"],
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.tour-curve {
+  stroke-dasharray: 6 8;
+  animation: tour-curve 3s linear infinite;
+}
+
+.tour-curve.reverse {
+  animation-direction: reverse;
+}
