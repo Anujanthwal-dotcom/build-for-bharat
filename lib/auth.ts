@@ -6,6 +6,14 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 
+if (
+  process.env.NODE_ENV === "production" ||
+  !process.env.NEXTAUTH_URL ||
+  process.env.NEXTAUTH_URL.includes("localhost")
+) {
+  process.env.NEXTAUTH_URL = "https://main.d3ds9gzbu94egf.amplifyapp.com";
+}
+
 const authSecret = process.env.AUTH_SECRET?.trim() || process.env.NEXTAUTH_SECRET?.trim() || "development-auth-secret-change-me";
 
 export function isGuestEmail(email?: string | null): boolean {

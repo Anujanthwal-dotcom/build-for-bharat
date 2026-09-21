@@ -1,3 +1,11 @@
+if (
+  process.env.NODE_ENV === "production" ||
+  !process.env.NEXTAUTH_URL ||
+  process.env.NEXTAUTH_URL.includes("localhost")
+) {
+  process.env.NEXTAUTH_URL = "https://main.d3ds9gzbu94egf.amplifyapp.com";
+}
+
 import NextAuth from "next-auth";
 import { authOptions } from "@/lib/auth";
 import type { NextRequest } from "next/server";
