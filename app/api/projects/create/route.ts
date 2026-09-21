@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSessionUserId } from '@/lib/auth';
 import * as cheerio from 'cheerio';
-import { PDFParse } from 'pdf-parse';
 
 export async function POST(request: Request) {
   try {
@@ -11,7 +10,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const formData = await request.formData();
+    const formData = await request.formData().catch(() => null);
+    if (!formData) {
+      return NextResponse.json({ success: false, error: "Invalid form data" }, { status: 400 });
+    }
     const text = formData.get('text') as string;
     const linksRaw = formData.get('links') as string;
     const links = linksRaw ? JSON.parse(linksRaw) : [];
@@ -63,14 +65,25 @@ export async function POST(request: Request) {
       try {
         const buffer = Buffer.from(await file.arrayBuffer());
         if (file.name.endsWith('.pdf')) {
-          const parser = new PDFParse({ data: buffer });
-          const textResult = await parser.getText();
-          sources.push({
-            type: 'file',
-            content: textResult.text.substring(0, 20000), // limit size
-            label: file.name,
-            projectId: project.id,
-          });
+          try {
+            const { PDFParse } = await import('pdf-parse');
+            const parser = new PDFParse({ data: buffer });
+            const textResult = await parser.getText();
+            sources.push({
+              type: 'file',
+              content: textResult.text.substring(0, 20000), // limit size
+              label: file.name,
+              projectId: project.id,
+            });
+          } catch (pdfErr) {
+            console.error("Failed to parse PDF with pdf-parse:", pdfErr);
+            sources.push({
+              type: 'file',
+              content: buffer.toString('utf-8').replace(/[^\x20-\x7E\n\r\t]/g, ' ').substring(0, 20000),
+              label: file.name,
+              projectId: project.id,
+            });
+          }
         } else {
           // txt, md
           sources.push({

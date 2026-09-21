@@ -67,6 +67,17 @@ export default function DumpWindowModal() {
         method: 'POST',
         body: formData,
       });
+      if (!createRes.ok) {
+        const errText = await createRes.text();
+        let errMsg = `Failed to create project (${createRes.status})`;
+        try {
+          const parsed = JSON.parse(errText);
+          if (parsed.error) errMsg = parsed.error;
+        } catch {
+          if (errText) errMsg = errText;
+        }
+        throw new Error(errMsg);
+      }
       const createData = await createRes.json();
 
       if (!createData.success) throw new Error(createData.error || "Failed to create project");
@@ -82,6 +93,17 @@ export default function DumpWindowModal() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ depth: depthValue }),
       });
+      if (!genRes.ok) {
+        const errText = await genRes.text();
+        let errMsg = `Failed to generate graph (${genRes.status})`;
+        try {
+          const parsed = JSON.parse(errText);
+          if (parsed.error) errMsg = parsed.error;
+        } catch {
+          if (errText) errMsg = errText;
+        }
+        throw new Error(errMsg);
+      }
       const genData = await genRes.json();
       
       if (!genData.success) throw new Error(genData.error || "Failed to generate graph");
